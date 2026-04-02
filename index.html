@@ -8,29 +8,17 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="MY RUN">
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --bg: #111;
-      --bg2: #1a1a1a;
-      --card: #1f1f1f;
-      --text: white;
-      --text2: #aaa;
-      --border: #333;
+      --bg: #111; --bg2: #1a1a1a; --card: #1f1f1f;
+      --text: white; --text2: #aaa; --border: #333;
     }
-
     body.light {
-      --bg: #f5f5f5;
-      --bg2: #e8e8e8;
-      --card: #ffffff;
-      --text: #111;
-      --text2: #666;
-      --border: #ddd;
+      --bg: #f5f5f5; --bg2: #e8e8e8; --card: #ffffff;
+      --text: #111; --text2: #666; --border: #ddd;
     }
 
     body {
@@ -45,106 +33,100 @@
       transition: background-color 0.3s, color 0.3s;
     }
 
-    /* 상단 바 */
     .top-bar {
-      display: flex;
-      width: 100%;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; width: 100%;
+      justify-content: space-between; align-items: center;
       padding: 16px 16px 0;
     }
-
     h1 { font-size: 22px; letter-spacing: 2px; color: #f97316; }
 
     .theme-toggle {
-      width: 44px !important;
-      height: 24px !important;
+      width: 44px !important; height: 24px !important;
       border-radius: 12px !important;
       background: var(--card) !important;
       border: 1px solid var(--border) !important;
       font-size: 14px !important;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      padding: 0 !important;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; padding: 0 !important;
     }
 
     #map { width: 100%; height: 35vh; margin-top: 10px; }
-    .stats { display: flex; gap: 30px; margin: 20px 0; }
-    .stat-box { text-align: center; }
-    .stat-label { font-size: 12px; color: var(--text2); letter-spacing: 1px; }
-    .stat-value { font-size: 36px; font-weight: bold; color: var(--text); }
-    .stat-unit { font-size: 14px; color: var(--text2); }
-    button { width: 110px; height: 110px; border-radius: 50%; border: none; font-size: 18px; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
-    button:active { transform: scale(0.95); }
-    #startBtn { background-color: #f97316; color: white; }
-    #stopBtn { background-color: #ef4444; color: white; display: none; }
 
-    /* 탭 */
+    .stats {
+      display: flex; flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px; margin: 20px 0; padding: 0 16px;
+    }
+    .stat-box { text-align: center; min-width: 60px; }
+    .stat-label { font-size: 12px; color: var(--text2); letter-spacing: 1px; }
+    .stat-value { font-size: 32px; font-weight: bold; color: var(--text); }
+    .stat-unit { font-size: 13px; color: var(--text2); }
+
+    #weight-display {
+      font-size: 12px; color: var(--text2);
+      margin-bottom: 10px; cursor: pointer;
+      text-decoration: underline; text-underline-offset: 3px;
+    }
+
+    .run-btns { display: flex; gap: 16px; margin-bottom: 4px; }
+    .run-btn {
+      width: 110px; height: 110px; border-radius: 50%;
+      border: none; font-size: 18px; font-weight: bold;
+      cursor: pointer; transition: transform 0.1s;
+    }
+    .run-btn:active { transform: scale(0.95); }
+    #startBtn { background-color: #f97316; color: white; }
+    #stopBtn  { background-color: #ef4444; color: white; display: none; }
+
+    #resume-banner {
+      display: none;
+      background: var(--card);
+      border: 1px solid #f97316;
+      border-radius: 12px;
+      padding: 12px 16px; margin: 10px 16px;
+      text-align: center; font-size: 14px;
+      color: #f97316; cursor: pointer;
+      width: calc(100% - 32px);
+    }
+
     .tab-bar {
-      display: flex;
-      width: 100%;
-      background: var(--bg2);
-      margin-top: 20px;
-      border-bottom: 1px solid var(--border);
-      overflow-x: auto;
+      display: flex; width: 100%;
+      background: var(--bg2); margin-top: 20px;
+      border-bottom: 1px solid var(--border); overflow-x: auto;
     }
     .tab-btn {
-      flex: 1;
-      min-width: 60px;
-      width: auto;
-      height: auto;
-      border-radius: 0;
-      background: none;
-      color: var(--text2);
-      font-size: 12px;
-      padding: 12px 4px;
-      border-bottom: 2px solid transparent;
-      letter-spacing: 0;
+      flex: 1; min-width: 60px; width: auto; height: auto;
+      border-radius: 0; background: none; color: var(--text2);
+      font-size: 12px; padding: 12px 4px;
+      border: none; border-bottom: 2px solid transparent;
     }
     .tab-btn.active { color: #f97316; border-bottom: 2px solid #f97316; }
-
     .tab-content { display: none; width: 100%; max-width: 480px; padding: 16px; }
     .tab-content.active { display: block; }
 
-    /* 기록 카드 */
     .record-card {
-      background-color: var(--card);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background-color: var(--card); border-radius: 12px;
+      padding: 14px 16px; margin-bottom: 10px;
+      display: flex; justify-content: space-between; align-items: center;
     }
     .record-date { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
-    .record-stats { display: flex; gap: 16px; }
+    .record-stats { display: flex; gap: 12px; flex-wrap: wrap; }
     .record-stat { text-align: center; }
     .record-stat span { display: block; font-size: 11px; color: var(--text2); }
-    .record-stat strong { font-size: 16px; color: var(--text); }
-    .delete-btn { width: auto; height: auto; background: none; color: #555; font-size: 18px; border-radius: 0; }
-    #no-records { text-align: center; color: #555; font-size: 14px; margin-top: 10px; }
+    .record-stat strong { font-size: 15px; color: var(--text); }
+    .delete-btn {
+      width: auto !important; height: auto !important;
+      background: none !important; color: #555;
+      font-size: 18px; border-radius: 0 !important; border: none; cursor: pointer;
+    }
 
-    /* 통계 요약 */
-    .stats-summary {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .summary-card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 14px;
-      text-align: center;
-    }
+    .stats-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .summary-card { background: var(--card); border-radius: 12px; padding: 14px; text-align: center; }
     .summary-card .s-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
     .summary-card .s-value { font-size: 22px; font-weight: bold; color: #f97316; }
     .summary-card .s-unit { font-size: 11px; color: var(--text2); }
 
-    /* 그래프 */
-    .chart-title { font-size: 13px; color: var(--text2); margin-bottom: 12px; letter-spacing: 1px; }
+    .chart-title { font-size: 13px; color: var(--text2); margin-bottom: 12px; }
     .chart-wrap { background: var(--bg2); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
     .bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 100px; margin-bottom: 6px; }
     .bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; }
@@ -153,19 +135,45 @@
     .bar-label { font-size: 9px; color: var(--text2); margin-top: 4px; text-align: center; }
     .bar-val { font-size: 9px; color: #f97316; margin-bottom: 2px; }
 
-    #resume-banner {
-      display: none;
-      background: var(--card);
-      border: 1px solid #f97316;
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin: 10px 16px;
-      text-align: center;
-      font-size: 14px;
-      color: #f97316;
-      cursor: pointer;
-      width: calc(100% - 32px);
+    /* 체중 모달 */
+    #weight-modal {
+      display: none; position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 999; align-items: center; justify-content: center;
     }
+    #weight-modal.show { display: flex; }
+    .modal-box {
+      background: var(--card); border-radius: 24px;
+      padding: 32px 24px; text-align: center; width: 300px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .modal-icon { font-size: 48px; margin-bottom: 12px; }
+    .modal-box h2 { font-size: 20px; font-weight: bold; color: var(--text); margin-bottom: 6px; }
+    .modal-box p { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.5; }
+    .weight-input-wrap {
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg2); border-radius: 14px;
+      border: 2px solid var(--border);
+      padding: 12px 16px; margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+    .weight-input-wrap:focus-within { border-color: #f97316; }
+    .weight-input-wrap input {
+      background: none; border: none; outline: none;
+      color: var(--text); font-size: 28px; font-weight: bold;
+      width: 80px; text-align: center;
+    }
+    .weight-input-wrap span { font-size: 16px; color: var(--text2); margin-left: 4px; }
+    .modal-confirm-btn {
+      width: 100%; height: 52px; border-radius: 26px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white; font-size: 16px; font-weight: bold;
+      border: none; cursor: pointer;
+      box-shadow: 0 4px 15px rgba(249,115,22,0.4);
+      transition: transform 0.1s;
+    }
+    .modal-confirm-btn:active { transform: scale(0.97); }
   </style>
 </head>
 <body>
@@ -174,6 +182,7 @@
     <h1>🏃 MY RUN</h1>
     <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</button>
   </div>
+
   <div id="resume-banner" onclick="resumeRun()">⚠️ 진행 중인 러닝이 있어요! 탭해서 이어하기</div>
   <div id="map"></div>
 
@@ -192,10 +201,33 @@
       <div class="stat-value" id="pace">--'--"</div>
       <div class="stat-unit">/ km</div>
     </div>
+    <div class="stat-box">
+      <div class="stat-label">칼로리</div>
+      <div class="stat-value" id="calories">0</div>
+      <div class="stat-unit">kcal</div>
+    </div>
   </div>
 
-  <button id="startBtn" onclick="startRun()">START</button>
-  <button id="stopBtn" onclick="stopRun()">STOP</button>
+  <div id="weight-display" onclick="openWeightModal()">⚖️ 체중 설정</div>
+
+  <div class="run-btns">
+    <button class="run-btn" id="startBtn" onclick="startRun()">START</button>
+    <button class="run-btn" id="stopBtn" onclick="stopRun()">STOP</button>
+  </div>
+
+  <!-- 체중 모달 -->
+  <div id="weight-modal">
+    <div class="modal-box">
+      <div class="modal-icon">⚖️</div>
+      <h2>체중을 입력해주세요</h2>
+      <p>정확한 칼로리 계산을 위해<br>체중이 필요해요</p>
+      <div class="weight-input-wrap">
+        <input type="number" id="weight-input" placeholder="70" min="30" max="200">
+        <span>kg</span>
+      </div>
+      <button class="modal-confirm-btn" onclick="saveWeight()">저장하기</button>
+    </div>
+  </div>
 
   <!-- 탭 바 -->
   <div class="tab-bar">
@@ -206,77 +238,88 @@
     <button class="tab-btn" onclick="switchTab('all')">전체</button>
   </div>
 
-  <!-- 최근 활동 -->
   <div class="tab-content active" id="tab-recent">
     <div id="records-list">
-      <p id="no-records" style="text-align:center;color:#555;font-size:14px;margin-top:10px;">아직 기록이 없어요. 달려보세요! 🏃</p>
+      <p style="text-align:center;color:#555;font-size:14px;margin-top:10px;">아직 기록이 없어요. 달려보세요! 🏃</p>
     </div>
   </div>
-
-  <!-- 주간 -->
   <div class="tab-content" id="tab-weekly">
     <div class="stats-summary" id="weekly-summary"></div>
-    <div class="chart-wrap">
-      <div class="chart-title">이번 주 거리 (km)</div>
-      <div class="bar-chart" id="weekly-chart"></div>
-    </div>
+    <div class="chart-wrap"><div class="chart-title">이번 주 거리 (km)</div><div class="bar-chart" id="weekly-chart"></div></div>
   </div>
-
-  <!-- 월간 -->
   <div class="tab-content" id="tab-monthly">
     <div class="stats-summary" id="monthly-summary"></div>
-    <div class="chart-wrap">
-      <div class="chart-title">이번 달 거리 (km)</div>
-      <div class="bar-chart" id="monthly-chart"></div>
-    </div>
+    <div class="chart-wrap"><div class="chart-title">이번 달 거리 (km)</div><div class="bar-chart" id="monthly-chart"></div></div>
   </div>
-
-  <!-- 연간 -->
   <div class="tab-content" id="tab-yearly">
     <div class="stats-summary" id="yearly-summary"></div>
-    <div class="chart-wrap">
-      <div class="chart-title">올해 거리 (km)</div>
-      <div class="bar-chart" id="yearly-chart"></div>
-    </div>
+    <div class="chart-wrap"><div class="chart-title">올해 거리 (km)</div><div class="bar-chart" id="yearly-chart"></div></div>
   </div>
-
-  <!-- 전체 -->
   <div class="tab-content" id="tab-all">
     <div class="stats-summary" id="all-summary"></div>
-    <div class="chart-wrap">
-      <div class="chart-title">년도별 총 거리 (km)</div>
-      <div class="bar-chart" id="all-chart"></div>
-    </div>
+    <div class="chart-wrap"><div class="chart-title">년도별 총 거리 (km)</div><div class="bar-chart" id="all-chart"></div></div>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    const map = L.map('map').setView([37.5665, 126.9780], 16);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-
+    let map;
     let watchId = null, timerInterval = null;
     let seconds = 0, totalDistance = 0;
     let lastPosition = null, routeCoords = [], routeLine = null, startMarker = null;
     let recentPositions = [], isRunning = false;
+    let records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+    let userWeight = parseFloat(localStorage.getItem('userWeight')) || 0;
 
-    // ── 테마 토글 ──
+    window.addEventListener('load', function() {
+      map = L.map('map').setView([37.5665, 126.9780], 16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+
+      if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light');
+        document.getElementById('themeBtn').textContent = '☀️';
+      }
+
+      if (!userWeight) openWeightModal();
+      else updateWeightDisplay();
+
+      renderRecords();
+      checkRunningState();
+    });
+
     function toggleTheme() {
       const isLight = document.body.classList.toggle('light');
       document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
       localStorage.setItem('theme', isLight ? 'light' : 'dark');
     }
-    if (localStorage.getItem('theme') === 'light') {
-      document.body.classList.add('light');
-      document.getElementById('themeBtn').textContent = '☀️';
+
+    function openWeightModal() {
+      document.getElementById('weight-modal').classList.add('show');
+      if (userWeight) document.getElementById('weight-input').value = userWeight;
     }
 
-    let records = JSON.parse(localStorage.getItem('runRecords') || '[]');
-    renderRecords();
-    checkRunningState();
+    function saveWeight() {
+      const w = parseFloat(document.getElementById('weight-input').value);
+      if (!w || w < 30 || w > 200) { alert('30~200kg 사이로 입력해주세요'); return; }
+      userWeight = w;
+      localStorage.setItem('userWeight', w);
+      document.getElementById('weight-modal').classList.remove('show');
+      updateWeightDisplay();
+    }
+
+    function updateWeightDisplay() {
+      document.getElementById('weight-display').textContent = `⚖️ 내 체중: ${userWeight}kg (탭해서 변경)`;
+    }
+
+    function calcCalories() {
+      if (!userWeight || seconds === 0) return 0;
+      return Math.round(8 * userWeight * (seconds / 3600));
+    }
 
     function switchTab(name) {
       document.querySelectorAll('.tab-btn').forEach((b, i) => {
-        const tabs = ['recent','weekly','monthly','yearly','all'];
-        b.classList.toggle('active', tabs[i] === name);
+        b.classList.toggle('active', ['recent','weekly','monthly','yearly','all'][i] === name);
       });
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.getElementById('tab-' + name).classList.add('active');
@@ -286,163 +329,88 @@
       if (name === 'all') renderAll();
     }
 
-    // ── 주간 ──
     function renderWeekly() {
       const now = new Date();
-      const day = now.getDay(); // 0=일
       const monday = new Date(now);
-      monday.setDate(now.getDate() - ((day + 6) % 7));
+      monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
       monday.setHours(0,0,0,0);
-
-      const days = ['월','화','수','목','금','토','일'];
       const buckets = Array(7).fill(0);
       let runCount = 0;
-
       records.forEach(r => {
         const d = new Date(r.id);
-        if (d >= monday) {
-          const idx = ((d.getDay() + 6) % 7);
-          buckets[idx] += parseFloat(r.distance);
-          runCount++;
-        }
+        if (d >= monday) { buckets[(d.getDay() + 6) % 7] += parseFloat(r.distance); runCount++; }
       });
-
-      renderBarChart('weekly-chart', buckets, days);
+      renderBarChart('weekly-chart', buckets, ['월','화','수','목','금','토','일']);
       renderSummary('weekly-summary', records.filter(r => new Date(r.id) >= monday), runCount, 7, '주');
     }
 
-    // ── 월간 ──
     function renderMonthly() {
       const now = new Date();
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
       const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
       const buckets = Array(daysInMonth).fill(0);
       let runCount = 0;
-
       records.forEach(r => {
         const d = new Date(r.id);
-        if (d >= firstDay && d.getMonth() === now.getMonth()) {
-          buckets[d.getDate() - 1] += parseFloat(r.distance);
-          runCount++;
-        }
+        if (d >= firstDay && d.getMonth() === now.getMonth()) { buckets[d.getDate()-1] += parseFloat(r.distance); runCount++; }
       });
-
-      const labels = Array.from({length: daysInMonth}, (_, i) => i+1);
-      renderBarChart('monthly-chart', buckets, labels);
-      renderSummary('monthly-summary', records.filter(r => {
-        const d = new Date(r.id);
-        return d >= firstDay && d.getMonth() === now.getMonth();
-      }), runCount, daysInMonth, '달');
+      renderBarChart('monthly-chart', buckets, Array.from({length: daysInMonth}, (_,i) => i+1));
+      renderSummary('monthly-summary', records.filter(r => { const d = new Date(r.id); return d >= firstDay && d.getMonth() === now.getMonth(); }), runCount, daysInMonth, '달');
     }
 
-    // ── 연간 ──
     function renderYearly() {
       const now = new Date();
-      const firstDay = new Date(now.getFullYear(), 0, 1);
       const buckets = Array(12).fill(0);
       let runCount = 0;
-
       records.forEach(r => {
         const d = new Date(r.id);
-        if (d.getFullYear() === now.getFullYear()) {
-          buckets[d.getMonth()] += parseFloat(r.distance);
-          runCount++;
-        }
+        if (d.getFullYear() === now.getFullYear()) { buckets[d.getMonth()] += parseFloat(r.distance); runCount++; }
       });
-
-      const labels = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-      renderBarChart('yearly-chart', buckets, labels);
+      renderBarChart('yearly-chart', buckets, ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']);
       renderSummary('yearly-summary', records.filter(r => new Date(r.id).getFullYear() === now.getFullYear()), runCount, 52, '년');
     }
 
-    // ── 전체 ──
     function renderAll() {
       if (records.length === 0) {
         document.getElementById('all-chart').innerHTML = '<p style="color:#555;font-size:13px;">기록이 없어요</p>';
-        document.getElementById('all-summary').innerHTML = '';
-        return;
+        document.getElementById('all-summary').innerHTML = ''; return;
       }
       const yearMap = {};
-      records.forEach(r => {
-        const y = new Date(r.id).getFullYear();
-        yearMap[y] = (yearMap[y] || 0) + parseFloat(r.distance);
-      });
+      records.forEach(r => { const y = new Date(r.id).getFullYear(); yearMap[y] = (yearMap[y]||0) + parseFloat(r.distance); });
       const years = Object.keys(yearMap).sort();
-      const buckets = years.map(y => yearMap[y]);
-      renderBarChart('all-chart', buckets, years);
+      renderBarChart('all-chart', years.map(y => yearMap[y]), years);
       renderSummary('all-summary', records, records.length, null, '전체');
     }
 
-    // ── 막대 그래프 ──
     function renderBarChart(id, buckets, labels) {
-      const el = document.getElementById(id);
       const max = Math.max(...buckets, 0.01);
-      el.innerHTML = buckets.map((v, i) => `
+      document.getElementById(id).innerHTML = buckets.map((v, i) => `
         <div class="bar-col">
           <div class="bar-val">${v > 0 ? v.toFixed(1) : ''}</div>
-          <div class="bar ${v === 0 ? 'empty' : ''}" style="height:${Math.max((v/max)*90, v>0?4:2)}px"></div>
+          <div class="bar ${v===0?'empty':''}" style="height:${Math.max((v/max)*90, v>0?4:2)}px"></div>
           <div class="bar-label">${labels[i]}</div>
-        </div>
-      `).join('');
+        </div>`).join('');
     }
 
-    // ── 통계 요약 ──
     function renderSummary(id, filteredRecords, runCount, periodDays, periodLabel) {
-      const totalDist = filteredRecords.reduce((s, r) => s + parseFloat(r.distance), 0);
-      const totalSec = filteredRecords.reduce((s, r) => {
-        const [m, sec] = r.time.split(':').map(Number);
-        return s + m*60 + sec;
-      }, 0);
-
-      // 평균 페이스
+      const totalDist = filteredRecords.reduce((s,r) => s + parseFloat(r.distance), 0);
+      const totalSec = filteredRecords.reduce((s,r) => { const [m,sec] = r.time.split(':').map(Number); return s + m*60 + sec; }, 0);
       let avgPace = '--\'--"';
-      if (totalDist > 0) {
-        const ps = totalSec / totalDist;
-        avgPace = `${Math.floor(ps/60)}'${String(Math.round(ps%60)).padStart(2,'0')}"`;
-      }
-
-      // 러닝 빈도
-      let freq = '--';
-      if (periodDays) {
-        freq = (runCount / periodDays).toFixed(2);
-      }
-
-      // 총 시간
-      const hrs = Math.floor(totalSec / 3600);
-      const mins = Math.floor((totalSec % 3600) / 60);
-      const timeStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
-
+      if (totalDist > 0) { const ps = totalSec/totalDist; avgPace = `${Math.floor(ps/60)}'${String(Math.round(ps%60)).padStart(2,'0')}"`; }
+      const freq = periodDays ? (runCount/periodDays).toFixed(2) : runCount;
+      const hrs = Math.floor(totalSec/3600), mins = Math.floor((totalSec%3600)/60);
       document.getElementById(id).innerHTML = `
-        <div class="summary-card">
-          <div class="s-label">러닝 횟수</div>
-          <div class="s-value">${periodDays ? freq : runCount}</div>
-          <div class="s-unit">${periodDays ? `런닝/${periodLabel}` : '회'}</div>
-        </div>
-        <div class="summary-card">
-          <div class="s-label">총 거리</div>
-          <div class="s-value">${totalDist.toFixed(2)}</div>
-          <div class="s-unit">km</div>
-        </div>
-        <div class="summary-card">
-          <div class="s-label">평균 페이스</div>
-          <div class="s-value" style="font-size:18px">${avgPace}</div>
-          <div class="s-unit">/ km</div>
-        </div>
-        <div class="summary-card">
-          <div class="s-label">총 시간</div>
-          <div class="s-value" style="font-size:18px">${timeStr}</div>
-          <div class="s-unit"></div>
-        </div>
-      `;
+        <div class="summary-card"><div class="s-label">러닝 횟수</div><div class="s-value">${freq}</div><div class="s-unit">${periodDays ? `런닝/${periodLabel}` : '회'}</div></div>
+        <div class="summary-card"><div class="s-label">총 거리</div><div class="s-value">${totalDist.toFixed(2)}</div><div class="s-unit">km</div></div>
+        <div class="summary-card"><div class="s-label">평균 페이스</div><div class="s-value" style="font-size:18px">${avgPace}</div><div class="s-unit">/ km</div></div>
+        <div class="summary-card"><div class="s-label">총 시간</div><div class="s-value" style="font-size:18px">${hrs>0?`${hrs}h ${mins}m`:`${mins}m`}</div><div class="s-unit"></div></div>`;
     }
 
-    // ── GPS / 러닝 로직 ──
     function checkRunningState() {
       const saved = localStorage.getItem('currentRun');
       if (!saved) return;
       const data = JSON.parse(saved);
-      const elapsed = Math.floor((Date.now() - data.startTime) / 1000);
-      if (elapsed > 86400) { localStorage.removeItem('currentRun'); return; }
+      if (Math.floor((Date.now() - data.startTime) / 1000) > 86400) { localStorage.removeItem('currentRun'); return; }
       document.getElementById('resume-banner').style.display = 'block';
     }
 
@@ -457,7 +425,7 @@
       document.getElementById('distance').textContent = totalDistance.toFixed(2);
       if (routeCoords.length > 1) {
         routeLine = L.polyline(routeCoords, { color: '#f97316', weight: 4 }).addTo(map);
-        map.setView(routeCoords[routeCoords.length - 1], 16);
+        map.setView(routeCoords[routeCoords.length-1], 16);
         startMarker = L.circleMarker(routeCoords[0], { color: '#f97316', fillColor: '#f97316', fillOpacity: 1, radius: 8 }).addTo(map);
       }
       startTracking();
@@ -467,11 +435,12 @@
 
     function saveRunningState() {
       if (!isRunning) return;
-      localStorage.setItem('currentRun', JSON.stringify({ startTime: Date.now() - (seconds * 1000), totalDistance, routeCoords }));
+      localStorage.setItem('currentRun', JSON.stringify({ startTime: Date.now() - seconds*1000, totalDistance, routeCoords }));
     }
 
     function startRun() {
-      seconds = 0; totalDistance = 0; routeCoords = []; lastPosition = null; recentPositions = []; startMarker = null;
+      seconds = 0; totalDistance = 0; routeCoords = [];
+      lastPosition = null; recentPositions = []; startMarker = null;
       document.getElementById('startBtn').style.display = 'none';
       document.getElementById('stopBtn').style.display = 'block';
       localStorage.setItem('currentRun', JSON.stringify({ startTime: Date.now(), totalDistance: 0, routeCoords: [] }));
@@ -484,6 +453,7 @@
         seconds++;
         document.getElementById('timer').textContent = formatTime(seconds);
         updatePace();
+        document.getElementById('calories').textContent = calcCalories();
         saveRunningState();
       }, 1000);
       watchId = navigator.geolocation.watchPosition(
@@ -504,30 +474,23 @@
             totalDistance += dist;
             document.getElementById('distance').textContent = totalDistance.toFixed(2);
           }
-          // 현재 위치 마커 업데이트
           if (window._currentMarker) map.removeLayer(window._currentMarker);
-          window._currentMarker = L.circleMarker(latlng, {
-            color: 'white', fillColor: '#3b82f6', fillOpacity: 1, radius: 7, weight: 2
-          }).addTo(map);
-
-          recentPositions.push({ lat: latitude, lng: longitude, time: now });
-          recentPositions = recentPositions.filter(p => now - p.time < 60000);
-
-          // km 단위 알림
-          const prevKm = Math.floor((totalDistance - (lastPosition ? calcDistance(lastPosition.lat, lastPosition.lng, latitude, longitude) : 0)));
+          window._currentMarker = L.circleMarker(latlng, { color: 'white', fillColor: '#3b82f6', fillOpacity: 1, radius: 7, weight: 2 }).addTo(map);
+          const prevKm = Math.floor(totalDistance - (lastPosition ? calcDistance(lastPosition.lat, lastPosition.lng, latitude, longitude) : 0));
           const currKm = Math.floor(totalDistance);
           if (currKm > prevKm && currKm > 0) {
-            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-            const ding = new AudioContext();
-            const o = ding.createOscillator();
-            const g = ding.createGain();
-            o.connect(g); g.connect(ding.destination);
-            o.frequency.value = 880;
-            g.gain.setValueAtTime(0.3, ding.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, ding.currentTime + 0.5);
-            o.start(); o.stop(ding.currentTime + 0.5);
+            if (navigator.vibrate) navigator.vibrate([200,100,200]);
+            try {
+              const ctx = new AudioContext(), o = ctx.createOscillator(), g = ctx.createGain();
+              o.connect(g); g.connect(ctx.destination);
+              o.frequency.value = 880;
+              g.gain.setValueAtTime(0.3, ctx.currentTime);
+              g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+              o.start(); o.stop(ctx.currentTime + 0.5);
+            } catch(e) {}
           }
-
+          recentPositions.push({ lat: latitude, lng: longitude, time: now });
+          recentPositions = recentPositions.filter(p => now - p.time < 60000);
           lastPosition = { lat: latitude, lng: longitude };
         },
         (error) => alert('GPS 오류: ' + error.message),
@@ -537,18 +500,15 @@
 
     function updatePace() {
       if (recentPositions.length < 2) return;
-      const oldest = recentPositions[0];
-      const newest = recentPositions[recentPositions.length - 1];
+      const oldest = recentPositions[0], newest = recentPositions[recentPositions.length-1];
       const timeDiff = (newest.time - oldest.time) / 1000;
       let recentDist = 0;
       for (let i = 1; i < recentPositions.length; i++) {
         recentDist += calcDistance(recentPositions[i-1].lat, recentPositions[i-1].lng, recentPositions[i].lat, recentPositions[i].lng);
       }
       if (recentDist < 0.01) return;
-      const paceSeconds = timeDiff / recentDist;
-      const paceMin = Math.floor(paceSeconds / 60);
-      const paceSec = String(Math.round(paceSeconds % 60)).padStart(2, '0');
-      document.getElementById('pace').textContent = `${paceMin}'${paceSec}"`;
+      const ps = timeDiff / recentDist;
+      document.getElementById('pace').textContent = `${Math.floor(ps/60)}'${String(Math.round(ps%60)).padStart(2,'0')}"`;
     }
 
     function stopRun() {
@@ -558,24 +518,27 @@
       clearInterval(timerInterval);
       navigator.geolocation.clearWatch(watchId);
       localStorage.removeItem('currentRun');
+      const finalCalories = calcCalories();
       if (totalDistance > 0.01) {
         const now = new Date();
-        const record = {
+        records.unshift({
           id: Date.now(),
-          date: now.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+          date: now.toLocaleDateString('ko-KR', { month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' }),
           distance: totalDistance.toFixed(2),
           time: formatTime(seconds),
-          pace: document.getElementById('pace').textContent
-        };
-        records.unshift(record);
+          pace: document.getElementById('pace').textContent,
+          calories: finalCalories
+        });
         localStorage.setItem('runRecords', JSON.stringify(records));
         renderRecords();
       }
-      alert(`🏃 러닝 완료!\n거리: ${totalDistance.toFixed(2)} km\n시간: ${formatTime(seconds)}\n페이스: ${document.getElementById('pace').textContent} / km`);
-      seconds = 0; totalDistance = 0; lastPosition = null; routeCoords = []; startMarker = null; recentPositions = [];
+      alert(`🏃 러닝 완료!\n거리: ${totalDistance.toFixed(2)} km\n시간: ${formatTime(seconds)}\n페이스: ${document.getElementById('pace').textContent} / km\n칼로리: ${finalCalories} kcal`);
+      seconds = 0; totalDistance = 0; lastPosition = null;
+      routeCoords = []; startMarker = null; recentPositions = [];
       document.getElementById('distance').textContent = '0.00';
       document.getElementById('timer').textContent = '00:00';
       document.getElementById('pace').textContent = `--'--"`;
+      document.getElementById('calories').textContent = '0';
       if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
       if (window._currentMarker) { map.removeLayer(window._currentMarker); window._currentMarker = null; }
     }
@@ -583,7 +546,7 @@
     function renderRecords() {
       const list = document.getElementById('records-list');
       if (records.length === 0) {
-        list.innerHTML = '<p id="no-records" style="text-align:center;color:#555;font-size:14px;margin-top:10px;">아직 기록이 없어요. 달려보세요! 🏃</p>';
+        list.innerHTML = '<p style="text-align:center;color:#555;font-size:14px;margin-top:10px;">아직 기록이 없어요. 달려보세요! 🏃</p>';
         return;
       }
       list.innerHTML = records.map(r => `
@@ -594,11 +557,11 @@
               <div class="record-stat"><strong>${r.distance}</strong><span>km</span></div>
               <div class="record-stat"><strong>${r.time}</strong><span>시간</span></div>
               <div class="record-stat"><strong>${r.pace}</strong><span>페이스</span></div>
+              ${r.calories ? `<div class="record-stat"><strong>${r.calories}</strong><span>kcal</span></div>` : ''}
             </div>
           </div>
           <button class="delete-btn" onclick="deleteRecord(${r.id})">🗑️</button>
-        </div>
-      `).join('');
+        </div>`).join('');
     }
 
     function deleteRecord(id) {
@@ -608,15 +571,11 @@
     }
 
     function formatTime(s) {
-      const m = String(Math.floor(s / 60)).padStart(2, '0');
-      const sec = String(s % 60).padStart(2, '0');
-      return `${m}:${sec}`;
+      return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
     }
 
     function calcDistance(lat1, lng1, lat2, lng2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLng = (lng2 - lng1) * Math.PI / 180;
+      const R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
       const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
