@@ -14,7 +14,6 @@
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       background-color: #111;
       color: white;
@@ -25,110 +24,34 @@
       height: 100vh;
       overflow-y: auto;
     }
-
-    h1 {
-      font-size: 22px;
-      padding: 16px 0 10px;
-      letter-spacing: 2px;
-      color: #f97316;
-    }
-
+    h1 { font-size: 22px; padding: 16px 0 10px; letter-spacing: 2px; color: #f97316; }
     #map { width: 100%; height: 35vh; }
-
-    .stats {
-      display: flex;
-      gap: 30px;
-      margin: 20px 0;
-    }
-
+    .stats { display: flex; gap: 30px; margin: 20px 0; }
     .stat-box { text-align: center; }
-
-    .stat-label {
-      font-size: 12px;
-      color: #aaa;
-      letter-spacing: 1px;
-    }
-
-    .stat-value {
-      font-size: 36px;
-      font-weight: bold;
-    }
-
+    .stat-label { font-size: 12px; color: #aaa; letter-spacing: 1px; }
+    .stat-value { font-size: 36px; font-weight: bold; }
     .stat-unit { font-size: 14px; color: #aaa; }
-
-    button {
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
-      border: none;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
-
+    button { width: 110px; height: 110px; border-radius: 50%; border: none; font-size: 18px; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
     button:active { transform: scale(0.95); }
     #startBtn { background-color: #f97316; color: white; }
-    #stopBtn  { background-color: #ef4444; color: white; display: none; }
-
-    #records-section {
-      width: 100%;
-      max-width: 400px;
-      padding: 20px 16px;
-    }
-
-    #records-section h2 {
-      font-size: 16px;
-      color: #f97316;
-      margin-bottom: 12px;
-      letter-spacing: 1px;
-    }
-
-    .record-card {
-      background-color: #1f1f1f;
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .record-date {
-      font-size: 12px;
-      color: #aaa;
-      margin-bottom: 4px;
-    }
-
-    .record-stats {
-      display: flex;
-      gap: 16px;
-    }
-
+    #stopBtn { background-color: #ef4444; color: white; display: none; }
+    #records-section { width: 100%; max-width: 400px; padding: 20px 16px; }
+    #records-section h2 { font-size: 16px; color: #f97316; margin-bottom: 12px; letter-spacing: 1px; }
+    .record-card { background-color: #1f1f1f; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .record-date { font-size: 12px; color: #aaa; margin-bottom: 4px; }
+    .record-stats { display: flex; gap: 16px; }
     .record-stat { text-align: center; }
     .record-stat span { display: block; font-size: 11px; color: #aaa; }
     .record-stat strong { font-size: 16px; }
-
-    .delete-btn {
-      width: auto;
-      height: auto;
-      background: none;
-      color: #555;
-      font-size: 18px;
-      border-radius: 0;
-    }
-
-    #no-records {
-      text-align: center;
-      color: #555;
-      font-size: 14px;
-      margin-top: 10px;
-    }
+    .delete-btn { width: auto; height: auto; background: none; color: #555; font-size: 18px; border-radius: 0; }
+    #no-records { text-align: center; color: #555; font-size: 14px; margin-top: 10px; }
+    #resume-banner { display: none; background: #1f1f1f; border: 1px solid #f97316; border-radius: 12px; padding: 12px 16px; margin: 10px 16px; text-align: center; font-size: 14px; color: #f97316; cursor: pointer; }
   </style>
 </head>
 <body>
 
   <h1>🏃 MY RUN</h1>
+  <div id="resume-banner" onclick="resumeRun()">⚠️ 진행 중인 러닝이 있어요! 탭해서 이어하기</div>
   <div id="map"></div>
 
   <div class="stats">
@@ -172,30 +95,101 @@
     let routeCoords = [];
     let routeLine = null;
     let startMarker = null;
-
-    // 최근 1분 페이스 계산용
     let recentPositions = [];
+    let isRunning = false;
 
     let records = JSON.parse(localStorage.getItem('runRecords') || '[]');
     renderRecords();
 
-    function startRun() {
+    // 앱 시작 시 진행 중인 러닝 확인
+    checkRunningState();
+
+    function checkRunningState() {
+      const saved = localStorage.getItem('currentRun');
+      if (!saved) return;
+
+      const data = JSON.parse(saved);
+      const elapsed = Math.floor((Date.now() - data.startTime) / 1000);
+
+      // 24시간 넘으면 무시
+      if (elapsed > 86400) {
+        localStorage.removeItem('currentRun');
+        return;
+      }
+
+      // 배너 표시
+      document.getElementById('resume-banner').style.display = 'block';
+    }
+
+    function resumeRun() {
+      const saved = localStorage.getItem('currentRun');
+      if (!saved) return;
+
+      const data = JSON.parse(saved);
+      seconds = Math.floor((Date.now() - data.startTime) / 1000);
+      totalDistance = data.totalDistance;
+      routeCoords = data.routeCoords;
+
+      document.getElementById('resume-banner').style.display = 'none';
+      document.getElementById('distance').textContent = totalDistance.toFixed(2);
+
+      // 경로 복원
+      if (routeCoords.length > 1) {
+        routeLine = L.polyline(routeCoords, { color: '#f97316', weight: 4 }).addTo(map);
+        map.setView(routeCoords[routeCoords.length - 1], 16);
+        startMarker = L.circleMarker(routeCoords[0], {
+          color: '#f97316', fillColor: '#f97316', fillOpacity: 1, radius: 8
+        }).addTo(map).bindPopup('시작 지점');
+      }
+
+      startTracking();
       document.getElementById('startBtn').style.display = 'none';
       document.getElementById('stopBtn').style.display = 'block';
+    }
+
+    function saveRunningState() {
+      if (!isRunning) return;
+      localStorage.setItem('currentRun', JSON.stringify({
+        startTime: Date.now() - (seconds * 1000),
+        totalDistance,
+        routeCoords
+      }));
+    }
+
+    function startRun() {
+      seconds = 0;
+      totalDistance = 0;
       routeCoords = [];
+      lastPosition = null;
       recentPositions = [];
+      startMarker = null;
+
+      document.getElementById('startBtn').style.display = 'none';
+      document.getElementById('stopBtn').style.display = 'block';
+
+      // 초기 상태 저장
+      localStorage.setItem('currentRun', JSON.stringify({
+        startTime: Date.now(),
+        totalDistance: 0,
+        routeCoords: []
+      }));
+
+      startTracking();
+    }
+
+    function startTracking() {
+      isRunning = true;
 
       timerInterval = setInterval(() => {
         seconds++;
         document.getElementById('timer').textContent = formatTime(seconds);
         updatePace();
+        saveRunningState(); // 매 초 상태 저장
       }, 1000);
 
       watchId = navigator.geolocation.watchPosition(
         (position) => {
           const { latitude, longitude, accuracy } = position.coords;
-
-          // 정확도 낮으면 무시 (50m 이상 오차)
           if (accuracy > 50) return;
 
           const latlng = [latitude, longitude];
@@ -205,31 +199,22 @@
 
           if (!startMarker) {
             startMarker = L.circleMarker(latlng, {
-              color: '#f97316', fillColor: '#f97316',
-              fillOpacity: 1, radius: 8
+              color: '#f97316', fillColor: '#f97316', fillOpacity: 1, radius: 8
             }).addTo(map).bindPopup('시작 지점').openPopup();
           }
 
           routeCoords.push(latlng);
           if (routeLine) map.removeLayer(routeLine);
-          routeLine = L.polyline(routeCoords, {
-            color: '#f97316', weight: 4
-          }).addTo(map);
+          routeLine = L.polyline(routeCoords, { color: '#f97316', weight: 4 }).addTo(map);
 
           if (lastPosition) {
-            const dist = calcDistance(
-              lastPosition.lat, lastPosition.lng,
-              latitude, longitude
-            );
+            const dist = calcDistance(lastPosition.lat, lastPosition.lng, latitude, longitude);
             totalDistance += dist;
-            document.getElementById('distance').textContent =
-              totalDistance.toFixed(2);
+            document.getElementById('distance').textContent = totalDistance.toFixed(2);
           }
 
-          // 최근 위치 저장 (1분치)
           recentPositions.push({ lat: latitude, lng: longitude, time: now });
           recentPositions = recentPositions.filter(p => now - p.time < 60000);
-
           lastPosition = { lat: latitude, lng: longitude };
         },
         (error) => alert('GPS 오류: ' + error.message),
@@ -238,13 +223,10 @@
     }
 
     function updatePace() {
-      // 최근 1분 데이터로 페이스 계산
       if (recentPositions.length < 2) return;
-
       const oldest = recentPositions[0];
       const newest = recentPositions[recentPositions.length - 1];
-      const timeDiff = (newest.time - oldest.time) / 1000; // 초
-
+      const timeDiff = (newest.time - oldest.time) / 1000;
       let recentDist = 0;
       for (let i = 1; i < recentPositions.length; i++) {
         recentDist += calcDistance(
@@ -252,9 +234,7 @@
           recentPositions[i].lat, recentPositions[i].lng
         );
       }
-
-      if (recentDist < 0.01) return; // 너무 짧으면 무시
-
+      if (recentDist < 0.01) return;
       const paceSeconds = timeDiff / recentDist;
       const paceMin = Math.floor(paceSeconds / 60);
       const paceSec = String(Math.round(paceSeconds % 60)).padStart(2, '0');
@@ -262,20 +242,19 @@
     }
 
     function stopRun() {
+      isRunning = false;
       document.getElementById('startBtn').style.display = 'block';
       document.getElementById('stopBtn').style.display = 'none';
 
       clearInterval(timerInterval);
       navigator.geolocation.clearWatch(watchId);
+      localStorage.removeItem('currentRun');
 
       if (totalDistance > 0.01) {
         const now = new Date();
         const record = {
           id: Date.now(),
-          date: now.toLocaleDateString('ko-KR', {
-            month: 'long', day: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-          }),
+          date: now.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
           distance: totalDistance.toFixed(2),
           time: formatTime(seconds),
           pace: document.getElementById('pace').textContent
@@ -306,18 +285,9 @@
           <div>
             <div class="record-date">${r.date}</div>
             <div class="record-stats">
-              <div class="record-stat">
-                <strong>${r.distance}</strong>
-                <span>km</span>
-              </div>
-              <div class="record-stat">
-                <strong>${r.time}</strong>
-                <span>시간</span>
-              </div>
-              <div class="record-stat">
-                <strong>${r.pace}</strong>
-                <span>페이스</span>
-              </div>
+              <div class="record-stat"><strong>${r.distance}</strong><span>km</span></div>
+              <div class="record-stat"><strong>${r.time}</strong><span>시간</span></div>
+              <div class="record-stat"><strong>${r.pace}</strong><span>페이스</span></div>
             </div>
           </div>
           <button class="delete-btn" onclick="deleteRecord(${r.id})">🗑️</button>
@@ -341,12 +311,8 @@
       const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLng = (lng2 - lng1) * Math.PI / 180;
-      const a =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos(lat1 * Math.PI / 180) *
-        Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLng / 2) ** 2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
   </script>
 
