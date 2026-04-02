@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>나의 러닝 앱</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="MY RUN">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background-color: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    h1 {
+      font-size: 22px;
+      padding: 16px 0 10px;
+      letter-spacing: 2px;
+      color: #f97316;
+    }
+
+    #map { width: 100%; height: 35vh; }
+
+    .stats {
+      display: flex;
+      gap: 30px;
+      margin: 20px 0;
+    }
+
+    .stat-box { text-align: center; }
+
+    .stat-label {
+      font-size: 12px;
+      color: #aaa;
+      letter-spacing: 1px;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: bold;
+    }
+
+    .stat-unit { font-size: 14px; color: #aaa; }
+
+    button {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      border: none;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    button:active { transform: scale(0.95); }
+    #startBtn { background-color: #f97316; color: white; }
+    #stopBtn  { background-color: #ef4444; color: white; display: none; }
+
+    /* 기록 목록 */
+    #records-section {
+      width: 100%;
+      max-width: 400px;
+      padding: 20px 16px;
+    }
+
+    #records-section h2 {
+      font-size: 16px;
+      color: #f97316;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+
+    .record-card {
+      background-color: #1f1f1f;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .record-date {
+      font-size: 12px;
+      color: #aaa;
+      margin-bottom: 4px;
+    }
+
+    .record-stats {
+      display: flex;
+      gap: 16px;
+    }
+
+    .record-stat {
+      text-align: center;
+    }
+
+    .record-stat span {
+      display: block;
+      font-size: 11px;
+      color: #aaa;
+    }
+
+    .record-stat strong {
+      font-size: 16px;
+    }
+
+    .delete-btn {
+      width: auto;
+      height: auto;
+      background: none;
+      color: #555;
+      font-size: 18px;
+      border-radius: 0;
+    }
+
+    .delete-btn:active { transform: scale(0.9); }
+
+    #no-records {
+      text-align: center;
+      color: #555;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🏃 MY RUN</h1>
+  <div id="map"></div>
+
+  <div class="stats">
+    <div class="stat-box">
+      <div class="stat-label">거리</div>
+      <div class="stat-value" id="distance">0.00</div>
+      <div class="stat-unit">km</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">시간</div>
+      <div class="stat-value" id="timer">00:00</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">페이스</div>
+      <div class="stat-value" id="pace">--'--"</div>
+      <div class="stat-unit">/ km</div>
+    </div>
+  </div>
+
+  <button id="startBtn" onclick="startRun()">START</button>
+  <button id="stopBtn" onclick="stopRun()">STOP</button>
+
+  <!-- 기록 목록 -->
+  <div id="records-section">
+    <h2>📋 내 기록</h2>
+    <div id="records-list">
+      <p id="no-records">아직 기록이 없어요. 달려보세요! 🏃</p>
+    </div>
+  </div>
+
+  <script>
+    const map = L.map('map').setView([37.5665, 126.9780], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    let watchId = null;
+    let timerInterval = null;
+    let seconds = 0;
+    let totalDistance = 0;
+    let lastPosition = null;
+    let routeCoords = [];
+    let routeLine = null;
+    let startMarker = null;
+
+    // 저장된 기록 불러오기
+    let records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+    renderRecords();
+
+    function startRun() {
+      document.getElementById('startBtn').style.display = 'none';
+      document.getElementById('stopBtn').style.display = 'block';
+      routeCoords = [];
+
+      timerInterval = setInterval(() => {
+        seconds++;
+        document.getElementById('timer').textContent = formatTime(seconds);
+
+        if (totalDistance > 0.01) {
+          const paceSeconds = seconds / totalDistance;
+          const paceMin = Math.floor(paceSeconds / 60);
+          const paceSec = String(Math.round(paceSeconds % 60)).padStart(2, '0');
+          document.getElementById('pace').textContent = `${paceMin}'${paceSec}"`;
+        }
+      }, 1000);
+
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const latlng = [latitude, longitude];
+
+          map.setView(latlng, 16);
+
+          if (!startMarker) {
+            startMarker = L.circleMarker(latlng, {
+              color: '#f97316', fillColor: '#f97316',
+              fillOpacity: 1, radius: 8
+            }).addTo(map).bindPopup('시작 지점').openPopup();
+          }
+
+          routeCoords.push(latlng);
+          if (routeLine) map.removeLayer(routeLine);
+          routeLine = L.polyline(routeCoords, {
+            color: '#f97316', weight: 4
+          }).addTo(map);
+
+          if (lastPosition) {
+            const dist = calcDistance(
+              lastPosition.lat, lastPosition.lng,
+              latitude, longitude
+            );
+            totalDistance += dist;
+            document.getElementById('distance').textContent =
+              totalDistance.toFixed(2);
+          }
+
+          lastPosition = { lat: latitude, lng: longitude };
+        },
+        (error) => alert('GPS 오류: ' + error.message),
+        { enableHighAccuracy: true, maximumAge: 0 }
+      );
+    }
+
+    function stopRun() {
+      document.getElementById('startBtn').style.display = 'block';
+      document.getElementById('stopBtn').style.display = 'none';
+
+      clearInterval(timerInterval);
+      navigator.geolocation.clearWatch(watchId);
+
+      // 기록 저장
+      if (totalDistance > 0.01) {
+        const now = new Date();
+        const record = {
+          id: Date.now(),
+          date: now.toLocaleDateString('ko-KR', {
+            month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          }),
+          distance: totalDistance.toFixed(2),
+          time: formatTime(seconds),
+          pace: document.getElementById('pace').textContent
+        };
+        records.unshift(record);
+        localStorage.setItem('runRecords', JSON.stringify(records));
+        renderRecords();
+      }
+
+      alert(`🏃 러닝 완료!\n거리: ${totalDistance.toFixed(2)} km\n시간: ${formatTime(seconds)}\n페이스: ${document.getElementById('pace').textContent} / km`);
+
+      // 초기화
+      seconds = 0; totalDistance = 0; lastPosition = null;
+      routeCoords = []; startMarker = null;
+      document.getElementById('distance').textContent = '0.00';
+      document.getElementById('timer').textContent = '00:00';
+      document.getElementById('pace').textContent = `--'--"`;
+      if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+    }
+
+    function renderRecords() {
+      const list = document.getElementById('records-list');
+      const noRecords = document.getElementById('no-records');
+
+      if (records.length === 0) {
+        list.innerHTML = '<p id="no-records">아직 기록이 없어요. 달려보세요! 🏃</p>';
+        return;
+      }
+
+      list.innerHTML = records.map(r => `
+        <div class="record-card">
+          <div>
+            <div class="record-date">${r.date}</div>
+            <div class="record-stats">
+              <div class="record-stat">
+                <strong>${r.distance}</strong>
+                <span>km</span>
+              </div>
+              <div class="record-stat">
+                <strong>${r.time}</strong>
+                <span>시간</span>
+              </div>
+              <div class="record-stat">
+                <strong>${r.pace}</strong>
+                <span>페이스</span>
+              </div>
+            </div>
+          </div>
+          <button class="delete-btn" onclick="deleteRecord(${r.id})">🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    function deleteRecord(id) {
+      records = records.filter(r => r.id !== id);
+      localStorage.setItem('runRecords', JSON.stringify(records));
+      renderRecords();
+    }
+
+    function formatTime(s) {
+      const m = String(Math.floor(s / 60)).padStart(2, '0');
+      const sec = String(s % 60).padStart(2, '0');
+      return `${m}:${sec}`;
+    }
+
+    function calcDistance(lat1, lng1, lat2, lng2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLng = (lng2 - lng1) * Math.PI / 180;
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) *
+        Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLng / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+  </script>
+
+</body>
+</html>
