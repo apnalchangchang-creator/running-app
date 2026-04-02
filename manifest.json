@@ -1,7 +1,7 @@
 {
-  "name": "MY RUN",
-  "short_name": "MY RUN",
-  "start_url": "/running-app/",
+  "name": "창창 RUN",
+  "short_name": "창창 RUN",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#111111",
   "theme_color": "#f97316",
