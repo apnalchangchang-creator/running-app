@@ -21,7 +21,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       overflow-y: auto;
     }
     h1 { font-size: 22px; padding: 16px 0 10px; letter-spacing: 2px; color: #f97316; }
@@ -35,9 +35,44 @@
     button:active { transform: scale(0.95); }
     #startBtn { background-color: #f97316; color: white; }
     #stopBtn { background-color: #ef4444; color: white; display: none; }
-    #records-section { width: 100%; max-width: 400px; padding: 20px 16px; }
-    #records-section h2 { font-size: 16px; color: #f97316; margin-bottom: 12px; letter-spacing: 1px; }
-    .record-card { background-color: #1f1f1f; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* 탭 */
+    .tab-bar {
+      display: flex;
+      width: 100%;
+      background: #1a1a1a;
+      margin-top: 20px;
+      border-bottom: 1px solid #333;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 60px;
+      width: auto;
+      height: auto;
+      border-radius: 0;
+      background: none;
+      color: #aaa;
+      font-size: 12px;
+      padding: 12px 4px;
+      border-bottom: 2px solid transparent;
+      letter-spacing: 0;
+    }
+    .tab-btn.active { color: #f97316; border-bottom: 2px solid #f97316; }
+
+    .tab-content { display: none; width: 100%; max-width: 480px; padding: 16px; }
+    .tab-content.active { display: block; }
+
+    /* 기록 카드 */
+    .record-card {
+      background-color: #1f1f1f;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
     .record-date { font-size: 12px; color: #aaa; margin-bottom: 4px; }
     .record-stats { display: flex; gap: 16px; }
     .record-stat { text-align: center; }
@@ -45,7 +80,74 @@
     .record-stat strong { font-size: 16px; }
     .delete-btn { width: auto; height: auto; background: none; color: #555; font-size: 18px; border-radius: 0; }
     #no-records { text-align: center; color: #555; font-size: 14px; margin-top: 10px; }
-    #resume-banner { display: none; background: #1f1f1f; border: 1px solid #f97316; border-radius: 12px; padding: 12px 16px; margin: 10px 16px; text-align: center; font-size: 14px; color: #f97316; cursor: pointer; }
+
+    /* 통계 요약 */
+    .stats-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .summary-card {
+      background: #1f1f1f;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+    .summary-card .s-label { font-size: 11px; color: #aaa; margin-bottom: 4px; }
+    .summary-card .s-value { font-size: 22px; font-weight: bold; color: #f97316; }
+    .summary-card .s-unit { font-size: 11px; color: #aaa; }
+
+    /* 그래프 */
+    .chart-title {
+      font-size: 13px;
+      color: #aaa;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+    .chart-wrap {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 100px;
+      margin-bottom: 6px;
+    }
+    .bar-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+    .bar {
+      width: 100%;
+      background: #f97316;
+      border-radius: 3px 3px 0 0;
+      min-height: 2px;
+      transition: height 0.3s;
+    }
+    .bar.empty { background: #333; }
+    .bar-label { font-size: 9px; color: #aaa; margin-top: 4px; text-align: center; }
+    .bar-val { font-size: 9px; color: #f97316; margin-bottom: 2px; }
+
+    #resume-banner {
+      display: none;
+      background: #1f1f1f;
+      border: 1px solid #f97316;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin: 10px 16px;
+      text-align: center;
+      font-size: 14px;
+      color: #f97316;
+      cursor: pointer;
+      width: calc(100% - 32px);
+    }
   </style>
 </head>
 <body>
@@ -74,74 +176,258 @@
   <button id="startBtn" onclick="startRun()">START</button>
   <button id="stopBtn" onclick="stopRun()">STOP</button>
 
-  <div id="records-section">
-    <h2>📋 내 기록</h2>
+  <!-- 탭 바 -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('recent')">최근 활동</button>
+    <button class="tab-btn" onclick="switchTab('weekly')">주간</button>
+    <button class="tab-btn" onclick="switchTab('monthly')">월간</button>
+    <button class="tab-btn" onclick="switchTab('yearly')">연간</button>
+    <button class="tab-btn" onclick="switchTab('all')">전체</button>
+  </div>
+
+  <!-- 최근 활동 -->
+  <div class="tab-content active" id="tab-recent">
     <div id="records-list">
-      <p id="no-records">아직 기록이 없어요. 달려보세요! 🏃</p>
+      <p id="no-records" style="text-align:center;color:#555;font-size:14px;margin-top:10px;">아직 기록이 없어요. 달려보세요! 🏃</p>
+    </div>
+  </div>
+
+  <!-- 주간 -->
+  <div class="tab-content" id="tab-weekly">
+    <div class="stats-summary" id="weekly-summary"></div>
+    <div class="chart-wrap">
+      <div class="chart-title">이번 주 거리 (km)</div>
+      <div class="bar-chart" id="weekly-chart"></div>
+    </div>
+  </div>
+
+  <!-- 월간 -->
+  <div class="tab-content" id="tab-monthly">
+    <div class="stats-summary" id="monthly-summary"></div>
+    <div class="chart-wrap">
+      <div class="chart-title">이번 달 거리 (km)</div>
+      <div class="bar-chart" id="monthly-chart"></div>
+    </div>
+  </div>
+
+  <!-- 연간 -->
+  <div class="tab-content" id="tab-yearly">
+    <div class="stats-summary" id="yearly-summary"></div>
+    <div class="chart-wrap">
+      <div class="chart-title">올해 거리 (km)</div>
+      <div class="bar-chart" id="yearly-chart"></div>
+    </div>
+  </div>
+
+  <!-- 전체 -->
+  <div class="tab-content" id="tab-all">
+    <div class="stats-summary" id="all-summary"></div>
+    <div class="chart-wrap">
+      <div class="chart-title">년도별 총 거리 (km)</div>
+      <div class="bar-chart" id="all-chart"></div>
     </div>
   </div>
 
   <script>
     const map = L.map('map').setView([37.5665, 126.9780], 16);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
-    }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
-    let watchId = null;
-    let timerInterval = null;
-    let seconds = 0;
-    let totalDistance = 0;
-    let lastPosition = null;
-    let routeCoords = [];
-    let routeLine = null;
-    let startMarker = null;
-    let recentPositions = [];
-    let isRunning = false;
+    let watchId = null, timerInterval = null;
+    let seconds = 0, totalDistance = 0;
+    let lastPosition = null, routeCoords = [], routeLine = null, startMarker = null;
+    let recentPositions = [], isRunning = false;
 
     let records = JSON.parse(localStorage.getItem('runRecords') || '[]');
     renderRecords();
-
-    // 앱 시작 시 진행 중인 러닝 확인
     checkRunningState();
 
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        const tabs = ['recent','weekly','monthly','yearly','all'];
+        b.classList.toggle('active', tabs[i] === name);
+      });
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      if (name === 'weekly') renderWeekly();
+      if (name === 'monthly') renderMonthly();
+      if (name === 'yearly') renderYearly();
+      if (name === 'all') renderAll();
+    }
+
+    // ── 주간 ──
+    function renderWeekly() {
+      const now = new Date();
+      const day = now.getDay(); // 0=일
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - ((day + 6) % 7));
+      monday.setHours(0,0,0,0);
+
+      const days = ['월','화','수','목','금','토','일'];
+      const buckets = Array(7).fill(0);
+      let runCount = 0;
+
+      records.forEach(r => {
+        const d = new Date(r.id);
+        if (d >= monday) {
+          const idx = ((d.getDay() + 6) % 7);
+          buckets[idx] += parseFloat(r.distance);
+          runCount++;
+        }
+      });
+
+      renderBarChart('weekly-chart', buckets, days);
+      renderSummary('weekly-summary', records.filter(r => new Date(r.id) >= monday), runCount, 7, '주');
+    }
+
+    // ── 월간 ──
+    function renderMonthly() {
+      const now = new Date();
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+      const buckets = Array(daysInMonth).fill(0);
+      let runCount = 0;
+
+      records.forEach(r => {
+        const d = new Date(r.id);
+        if (d >= firstDay && d.getMonth() === now.getMonth()) {
+          buckets[d.getDate() - 1] += parseFloat(r.distance);
+          runCount++;
+        }
+      });
+
+      const labels = Array.from({length: daysInMonth}, (_, i) => i+1);
+      renderBarChart('monthly-chart', buckets, labels);
+      renderSummary('monthly-summary', records.filter(r => {
+        const d = new Date(r.id);
+        return d >= firstDay && d.getMonth() === now.getMonth();
+      }), runCount, daysInMonth, '달');
+    }
+
+    // ── 연간 ──
+    function renderYearly() {
+      const now = new Date();
+      const firstDay = new Date(now.getFullYear(), 0, 1);
+      const buckets = Array(12).fill(0);
+      let runCount = 0;
+
+      records.forEach(r => {
+        const d = new Date(r.id);
+        if (d.getFullYear() === now.getFullYear()) {
+          buckets[d.getMonth()] += parseFloat(r.distance);
+          runCount++;
+        }
+      });
+
+      const labels = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+      renderBarChart('yearly-chart', buckets, labels);
+      renderSummary('yearly-summary', records.filter(r => new Date(r.id).getFullYear() === now.getFullYear()), runCount, 52, '년');
+    }
+
+    // ── 전체 ──
+    function renderAll() {
+      if (records.length === 0) {
+        document.getElementById('all-chart').innerHTML = '<p style="color:#555;font-size:13px;">기록이 없어요</p>';
+        document.getElementById('all-summary').innerHTML = '';
+        return;
+      }
+      const yearMap = {};
+      records.forEach(r => {
+        const y = new Date(r.id).getFullYear();
+        yearMap[y] = (yearMap[y] || 0) + parseFloat(r.distance);
+      });
+      const years = Object.keys(yearMap).sort();
+      const buckets = years.map(y => yearMap[y]);
+      renderBarChart('all-chart', buckets, years);
+      renderSummary('all-summary', records, records.length, null, '전체');
+    }
+
+    // ── 막대 그래프 ──
+    function renderBarChart(id, buckets, labels) {
+      const el = document.getElementById(id);
+      const max = Math.max(...buckets, 0.01);
+      el.innerHTML = buckets.map((v, i) => `
+        <div class="bar-col">
+          <div class="bar-val">${v > 0 ? v.toFixed(1) : ''}</div>
+          <div class="bar ${v === 0 ? 'empty' : ''}" style="height:${Math.max((v/max)*90, v>0?4:2)}px"></div>
+          <div class="bar-label">${labels[i]}</div>
+        </div>
+      `).join('');
+    }
+
+    // ── 통계 요약 ──
+    function renderSummary(id, filteredRecords, runCount, periodDays, periodLabel) {
+      const totalDist = filteredRecords.reduce((s, r) => s + parseFloat(r.distance), 0);
+      const totalSec = filteredRecords.reduce((s, r) => {
+        const [m, sec] = r.time.split(':').map(Number);
+        return s + m*60 + sec;
+      }, 0);
+
+      // 평균 페이스
+      let avgPace = '--\'--"';
+      if (totalDist > 0) {
+        const ps = totalSec / totalDist;
+        avgPace = `${Math.floor(ps/60)}'${String(Math.round(ps%60)).padStart(2,'0')}"`;
+      }
+
+      // 러닝 빈도
+      let freq = '--';
+      if (periodDays) {
+        freq = (runCount / periodDays).toFixed(2);
+      }
+
+      // 총 시간
+      const hrs = Math.floor(totalSec / 3600);
+      const mins = Math.floor((totalSec % 3600) / 60);
+      const timeStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+
+      document.getElementById(id).innerHTML = `
+        <div class="summary-card">
+          <div class="s-label">러닝 횟수</div>
+          <div class="s-value">${periodDays ? freq : runCount}</div>
+          <div class="s-unit">${periodDays ? `런닝/${periodLabel}` : '회'}</div>
+        </div>
+        <div class="summary-card">
+          <div class="s-label">총 거리</div>
+          <div class="s-value">${totalDist.toFixed(2)}</div>
+          <div class="s-unit">km</div>
+        </div>
+        <div class="summary-card">
+          <div class="s-label">평균 페이스</div>
+          <div class="s-value" style="font-size:18px">${avgPace}</div>
+          <div class="s-unit">/ km</div>
+        </div>
+        <div class="summary-card">
+          <div class="s-label">총 시간</div>
+          <div class="s-value" style="font-size:18px">${timeStr}</div>
+          <div class="s-unit"></div>
+        </div>
+      `;
+    }
+
+    // ── GPS / 러닝 로직 ──
     function checkRunningState() {
       const saved = localStorage.getItem('currentRun');
       if (!saved) return;
-
       const data = JSON.parse(saved);
       const elapsed = Math.floor((Date.now() - data.startTime) / 1000);
-
-      // 24시간 넘으면 무시
-      if (elapsed > 86400) {
-        localStorage.removeItem('currentRun');
-        return;
-      }
-
-      // 배너 표시
+      if (elapsed > 86400) { localStorage.removeItem('currentRun'); return; }
       document.getElementById('resume-banner').style.display = 'block';
     }
 
     function resumeRun() {
       const saved = localStorage.getItem('currentRun');
       if (!saved) return;
-
       const data = JSON.parse(saved);
       seconds = Math.floor((Date.now() - data.startTime) / 1000);
       totalDistance = data.totalDistance;
       routeCoords = data.routeCoords;
-
       document.getElementById('resume-banner').style.display = 'none';
       document.getElementById('distance').textContent = totalDistance.toFixed(2);
-
-      // 경로 복원
       if (routeCoords.length > 1) {
         routeLine = L.polyline(routeCoords, { color: '#f97316', weight: 4 }).addTo(map);
         map.setView(routeCoords[routeCoords.length - 1], 16);
-        startMarker = L.circleMarker(routeCoords[0], {
-          color: '#f97316', fillColor: '#f97316', fillOpacity: 1, radius: 8
-        }).addTo(map).bindPopup('시작 지점');
+        startMarker = L.circleMarker(routeCoords[0], { color: '#f97316', fillColor: '#f97316', fillOpacity: 1, radius: 8 }).addTo(map);
       }
-
       startTracking();
       document.getElementById('startBtn').style.display = 'none';
       document.getElementById('stopBtn').style.display = 'block';
@@ -149,70 +435,43 @@
 
     function saveRunningState() {
       if (!isRunning) return;
-      localStorage.setItem('currentRun', JSON.stringify({
-        startTime: Date.now() - (seconds * 1000),
-        totalDistance,
-        routeCoords
-      }));
+      localStorage.setItem('currentRun', JSON.stringify({ startTime: Date.now() - (seconds * 1000), totalDistance, routeCoords }));
     }
 
     function startRun() {
-      seconds = 0;
-      totalDistance = 0;
-      routeCoords = [];
-      lastPosition = null;
-      recentPositions = [];
-      startMarker = null;
-
+      seconds = 0; totalDistance = 0; routeCoords = []; lastPosition = null; recentPositions = []; startMarker = null;
       document.getElementById('startBtn').style.display = 'none';
       document.getElementById('stopBtn').style.display = 'block';
-
-      // 초기 상태 저장
-      localStorage.setItem('currentRun', JSON.stringify({
-        startTime: Date.now(),
-        totalDistance: 0,
-        routeCoords: []
-      }));
-
+      localStorage.setItem('currentRun', JSON.stringify({ startTime: Date.now(), totalDistance: 0, routeCoords: [] }));
       startTracking();
     }
 
     function startTracking() {
       isRunning = true;
-
       timerInterval = setInterval(() => {
         seconds++;
         document.getElementById('timer').textContent = formatTime(seconds);
         updatePace();
-        saveRunningState(); // 매 초 상태 저장
+        saveRunningState();
       }, 1000);
-
       watchId = navigator.geolocation.watchPosition(
         (position) => {
           const { latitude, longitude, accuracy } = position.coords;
           if (accuracy > 50) return;
-
           const latlng = [latitude, longitude];
           const now = Date.now();
-
           map.setView(latlng, 16);
-
           if (!startMarker) {
-            startMarker = L.circleMarker(latlng, {
-              color: '#f97316', fillColor: '#f97316', fillOpacity: 1, radius: 8
-            }).addTo(map).bindPopup('시작 지점').openPopup();
+            startMarker = L.circleMarker(latlng, { color: '#f97316', fillColor: '#f97316', fillOpacity: 1, radius: 8 }).addTo(map).bindPopup('시작 지점').openPopup();
           }
-
           routeCoords.push(latlng);
           if (routeLine) map.removeLayer(routeLine);
           routeLine = L.polyline(routeCoords, { color: '#f97316', weight: 4 }).addTo(map);
-
           if (lastPosition) {
             const dist = calcDistance(lastPosition.lat, lastPosition.lng, latitude, longitude);
             totalDistance += dist;
             document.getElementById('distance').textContent = totalDistance.toFixed(2);
           }
-
           recentPositions.push({ lat: latitude, lng: longitude, time: now });
           recentPositions = recentPositions.filter(p => now - p.time < 60000);
           lastPosition = { lat: latitude, lng: longitude };
@@ -229,10 +488,7 @@
       const timeDiff = (newest.time - oldest.time) / 1000;
       let recentDist = 0;
       for (let i = 1; i < recentPositions.length; i++) {
-        recentDist += calcDistance(
-          recentPositions[i-1].lat, recentPositions[i-1].lng,
-          recentPositions[i].lat, recentPositions[i].lng
-        );
+        recentDist += calcDistance(recentPositions[i-1].lat, recentPositions[i-1].lng, recentPositions[i].lat, recentPositions[i].lng);
       }
       if (recentDist < 0.01) return;
       const paceSeconds = timeDiff / recentDist;
@@ -245,11 +501,9 @@
       isRunning = false;
       document.getElementById('startBtn').style.display = 'block';
       document.getElementById('stopBtn').style.display = 'none';
-
       clearInterval(timerInterval);
       navigator.geolocation.clearWatch(watchId);
       localStorage.removeItem('currentRun');
-
       if (totalDistance > 0.01) {
         const now = new Date();
         const record = {
@@ -263,11 +517,8 @@
         localStorage.setItem('runRecords', JSON.stringify(records));
         renderRecords();
       }
-
       alert(`🏃 러닝 완료!\n거리: ${totalDistance.toFixed(2)} km\n시간: ${formatTime(seconds)}\n페이스: ${document.getElementById('pace').textContent} / km`);
-
-      seconds = 0; totalDistance = 0; lastPosition = null;
-      routeCoords = []; startMarker = null; recentPositions = [];
+      seconds = 0; totalDistance = 0; lastPosition = null; routeCoords = []; startMarker = null; recentPositions = [];
       document.getElementById('distance').textContent = '0.00';
       document.getElementById('timer').textContent = '00:00';
       document.getElementById('pace').textContent = `--'--"`;
@@ -277,7 +528,7 @@
     function renderRecords() {
       const list = document.getElementById('records-list');
       if (records.length === 0) {
-        list.innerHTML = '<p id="no-records">아직 기록이 없어요. 달려보세요! 🏃</p>';
+        list.innerHTML = '<p id="no-records" style="text-align:center;color:#555;font-size:14px;margin-top:10px;">아직 기록이 없어요. 달려보세요! 🏃</p>';
         return;
       }
       list.innerHTML = records.map(r => `
@@ -315,6 +566,5 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
   </script>
-
 </body>
 </html>
