@@ -472,8 +472,30 @@
             totalDistance += dist;
             document.getElementById('distance').textContent = totalDistance.toFixed(2);
           }
+          // 현재 위치 마커 업데이트
+          if (window._currentMarker) map.removeLayer(window._currentMarker);
+          window._currentMarker = L.circleMarker(latlng, {
+            color: 'white', fillColor: '#3b82f6', fillOpacity: 1, radius: 7, weight: 2
+          }).addTo(map);
+
           recentPositions.push({ lat: latitude, lng: longitude, time: now });
           recentPositions = recentPositions.filter(p => now - p.time < 60000);
+
+          // km 단위 알림
+          const prevKm = Math.floor((totalDistance - (lastPosition ? calcDistance(lastPosition.lat, lastPosition.lng, latitude, longitude) : 0)));
+          const currKm = Math.floor(totalDistance);
+          if (currKm > prevKm && currKm > 0) {
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+            const ding = new AudioContext();
+            const o = ding.createOscillator();
+            const g = ding.createGain();
+            o.connect(g); g.connect(ding.destination);
+            o.frequency.value = 880;
+            g.gain.setValueAtTime(0.3, ding.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ding.currentTime + 0.5);
+            o.start(); o.stop(ding.currentTime + 0.5);
+          }
+
           lastPosition = { lat: latitude, lng: longitude };
         },
         (error) => alert('GPS 오류: ' + error.message),
@@ -523,6 +545,7 @@
       document.getElementById('timer').textContent = '00:00';
       document.getElementById('pace').textContent = `--'--"`;
       if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+      if (window._currentMarker) { map.removeLayer(window._currentMarker); window._currentMarker = null; }
     }
 
     function renderRecords() {
