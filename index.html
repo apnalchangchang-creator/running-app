@@ -583,7 +583,12 @@
   //  상태 변수
   // ═══════════════════════════════════════════════
   let map, watchId = null, timerInterval = null;
-  let seconds = 0, totalDistance = 0;
+  // seconds는 UI 표시용 캐시 - 실제 경과 시간은 startTime 기준으로 계산
+  let runStartTime = null;   // 실제 시작 Unix ms (일시정지 누적 반영)
+  let pauseStartTime = null; // 일시정지 시작 시점
+  let totalPausedMs = 0;     // 누적 일시정지 시간
+  let elapsedSeconds = 0;    // 현재 경과 초 (표시용)
+  let totalDistance = 0;
   let lastPosition = null, routeCoords = [], routeLine = null;
   let isRunning = false, isPaused = false;
   let goalDistance = 0;
@@ -598,9 +603,16 @@
     try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
   }
 
+  // ── 경과 초 계산 (startTime 기준, 일시정지 제외) ──
+  function getElapsedSeconds() {
+    if (!runStartTime) return 0;
+    const pausedMs = totalPausedMs + (isPaused && pauseStartTime ? Date.now() - pauseStartTime : 0);
+    return Math.floor((Date.now() - runStartTime - pausedMs) / 1000);
+  }
+
   // 앱 상태 - 항상 localStorage에서 로드
-  let records    = safeJSON('runRecords', []);
-  let userWeight = parseFloat(localStorage.getItem('userWeight')) || 0;
+  let records      = safeJSON('runRecords', []);
+  let userWeight   = parseFloat(localStorage.getItem('userWeight')) || 0;
   let earnedBadges = safeJSON('earnedBadges', {});
   let favCourses   = safeJSON('favCourses', []);
   let lastResultRecord = null;
@@ -749,8 +761,8 @@
     document.getElementById('weight-display').textContent = `⚖️ 내 체중: ${userWeight}kg (탭해서 변경)`;
   }
   function calcCalories() {
-    if (!userWeight || seconds === 0) return 0;
-    return Math.round(8 * userWeight * (seconds / 3600));
+    if (!userWeight || elapsedSeconds === 0) return 0;
+    return Math.round(8 * userWeight * (elapsedSeconds / 3600));
   }
 
   // ═══════════════════════════════════════════════
@@ -786,58 +798,76 @@
 
   function checkRunningState() {
     const saved = safeJSON('currentRun', null);
-    if (saved) document.getElementById('resume-banner').style.display = 'block';
+    if (!saved) return;
+    // 저장된 상태 복원 (시간은 startTime 기준으로 자동 계산)
+    totalDistance = saved.totalDistance || 0;
+    routeCoords   = saved.routeCoords   || [];
+    totalPausedMs = saved.totalPausedMs || 0;
+    runStartTime  = saved.runStartTime;
+    if (saved.goalDistance) setGoal(saved.goalDistance);
+    // UI 즉시 반영
+    document.getElementById('distance').textContent = totalDistance.toFixed(2);
+    elapsedSeconds = getElapsedSeconds();
+    document.getElementById('timer').textContent = formatTime(elapsedSeconds);
+    document.getElementById('resume-banner').style.display = 'block';
   }
 
   function resumeRun() {
-    const data = safeJSON('currentRun', null);
-    if (!data) return;
-    seconds = Math.floor((Date.now() - data.startTime) / 1000);
-    totalDistance = data.totalDistance || 0;
-    routeCoords = data.routeCoords || [];
-    if (data.goalDistance) setGoal(data.goalDistance);
     document.getElementById('resume-banner').style.display = 'none';
     _startTracking();
-    showToast('러닝을 재개했어요!');
+    showToast('러닝을 재개했어요! (' + formatTime(elapsedSeconds) + ' 경과)');
   }
 
   function startRun() {
     if (isRunning) return;
-    seconds = 0; totalDistance = 0; routeCoords = [];
-    lastPosition = null; currentSpeedKmh = 0;
+    // 시작 시각 기록 (앱 껐다 켜도 이 값으로 경과 시간 계산)
+    runStartTime   = Date.now();
+    totalPausedMs  = 0;
+    pauseStartTime = null;
+    elapsedSeconds = 0;
+    totalDistance  = 0;
+    routeCoords    = [];
+    lastPosition   = null;
+    currentSpeedKmh = 0;
     announcedMilestones.clear(); announcedKms.clear();
     document.getElementById('distance').textContent = '0.00';
-    document.getElementById('pace').textContent = "--'--\"";
+    document.getElementById('pace').textContent     = "--'--\"";
     document.getElementById('calories').textContent = '0';
-    document.getElementById('speed').textContent = '0.0';
+    document.getElementById('speed').textContent    = '0.0';
+    document.getElementById('timer').textContent    = '00:00';
     if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+    saveCurrentRunState(); // 즉시 저장 (앱 꺼도 복원 가능)
     _startTracking();
   }
 
   function _startTracking() {
     isRunning = true; isPaused = false;
     document.getElementById('startBtn').style.display = 'none';
-    document.getElementById('stopBtn').style.display = 'block';
+    document.getElementById('stopBtn').style.display  = 'block';
     document.getElementById('pauseBtn').style.display = 'flex';
-    document.getElementById('pauseBtn').textContent = '⏸';
+    document.getElementById('pauseBtn').textContent   = '⏸';
     document.getElementById('pauseBtn').classList.remove('active');
 
     timerInterval = setInterval(() => {
       if (isPaused) return;
-      seconds++;
-      document.getElementById('timer').textContent = formatTime(seconds);
+
+      // 핵심: setInterval 카운터 대신 실제 시작시각 기준으로 경과 시간 계산
+      elapsedSeconds = getElapsedSeconds();
+      document.getElementById('timer').textContent    = formatTime(elapsedSeconds);
       document.getElementById('calories').textContent = calcCalories();
       updateGoalProgress();
       checkVoiceAnnouncement();
+
       // 페이스 업데이트
-      if (totalDistance > 0.05) {
-        const paceSecPerKm = seconds / totalDistance;
+      if (totalDistance > 0.05 && elapsedSeconds > 0) {
+        const paceSecPerKm = elapsedSeconds / totalDistance;
         const pm = Math.floor(paceSecPerKm / 60);
         const ps = Math.floor(paceSecPerKm % 60);
         document.getElementById('pace').textContent = `${pm}'${String(ps).padStart(2,'0')}"`;
       }
-      // 진행 중 러닝 저장 (30초마다)
-      if (seconds % 30 === 0) saveCurrentRunState();
+
+      // 10초마다 저장 (앱 종료 대비)
+      if (elapsedSeconds % 10 === 0) saveCurrentRunState();
     }, 1000);
 
     if (!navigator.geolocation) {
@@ -850,14 +880,13 @@
         const latlng = [pos.coords.latitude, pos.coords.longitude];
         if (lastPosition) {
           const d = calcDistance(lastPosition[0], lastPosition[1], latlng[0], latlng[1]);
-          if (d < 0.5) { // 비정상 점프 필터링
+          if (d < 0.5) {
             totalDistance += d;
             document.getElementById('distance').textContent = totalDistance.toFixed(2);
           }
         }
         lastPosition = latlng;
         routeCoords.push(latlng);
-        // 속도
         if (pos.coords.speed != null) {
           currentSpeedKmh = pos.coords.speed * 3.6;
           document.getElementById('speed').textContent = currentSpeedKmh.toFixed(1);
@@ -866,6 +895,7 @@
         if (routeLine) map.removeLayer(routeLine);
         const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#f97316';
         routeLine = L.polyline(routeCoords, { color: accentColor, weight: 4 }).addTo(map);
+        saveCurrentRunState(); // GPS 업데이트마다 저장
       },
       err => { console.warn('GPS 오류:', err.message); },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -874,27 +904,35 @@
 
   function saveCurrentRunState() {
     safeSave('currentRun', {
-      startTime: Date.now() - seconds * 1000,
-      totalDistance, routeCoords, goalDistance
+      runStartTime,          // 실제 시작 Unix ms
+      totalPausedMs,         // 누적 일시정지 ms
+      totalDistance,
+      routeCoords,
+      goalDistance
     });
   }
 
   function togglePause() {
     if (!isRunning) return;
     isPaused = !isPaused;
-    const btn = document.getElementById('pauseBtn');
+    const btn     = document.getElementById('pauseBtn');
     const overlay = document.getElementById('pause-overlay');
     if (isPaused) {
+      pauseStartTime = Date.now();
       btn.textContent = '▶️'; btn.classList.add('active');
       overlay.classList.add('show');
       showToast('일시정지 됐어요');
+      saveCurrentRunState();
     } else {
+      // 일시정지 시간 누적
+      if (pauseStartTime) totalPausedMs += Date.now() - pauseStartTime;
+      pauseStartTime = null;
       btn.textContent = '⏸'; btn.classList.remove('active');
       overlay.classList.remove('show');
       showToast('러닝을 재개했어요!');
+      saveCurrentRunState();
     }
   }
-  // 일시정지 오버레이 클릭으로도 재개
   document.getElementById('pause-overlay').addEventListener('click', () => {
     if (isPaused) togglePause();
   });
@@ -907,16 +945,16 @@
     localStorage.removeItem('currentRun');
     document.getElementById('pause-overlay').classList.remove('show');
 
-    // 최소 거리 체크
     if (totalDistance < 0.05) {
       showToast('너무 짧은 거리는 저장되지 않아요 (최소 50m)');
       resetUI(); return;
     }
 
-    // 페이스 계산
+    // 최종 경과 시간 (startTime 기준)
+    const finalSeconds = getElapsedSeconds();
     let paceStr = "--'--\"";
-    if (totalDistance > 0) {
-      const paceSecPerKm = seconds / totalDistance;
+    if (totalDistance > 0 && finalSeconds > 0) {
+      const paceSecPerKm = finalSeconds / totalDistance;
       const pm = Math.floor(paceSecPerKm / 60);
       const ps = Math.floor(paceSecPerKm % 60);
       paceStr = `${pm}'${String(ps).padStart(2,'0')}"`;
@@ -925,17 +963,15 @@
     const rec = {
       id: Date.now(),
       distance: totalDistance.toFixed(2),
-      time: formatTime(seconds),
+      time: formatTime(finalSeconds),
       pace: paceStr,
-      calories: calcCalories(),
+      calories: Math.round(8 * (userWeight || 65) * (finalSeconds / 3600)),
       routeCoords: [...routeCoords]
     };
 
     records.unshift(rec);
     safeSave('runRecords', records);
     updateStreakBadge();
-
-    // 결과 표시
     showResultModal(rec);
     resetUI();
   }
@@ -1302,6 +1338,14 @@
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
   }
+  // ── 앱 포그라운드 복귀 시 타이머 즉시 동기화 ──
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && isRunning && !isPaused) {
+      elapsedSeconds = getElapsedSeconds();
+      document.getElementById('timer').textContent    = formatTime(elapsedSeconds);
+      document.getElementById('calories').textContent = calcCalories();
+    }
+  });
   </script>
 </body>
 </html>
