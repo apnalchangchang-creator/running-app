@@ -441,43 +441,48 @@
     let pendingSaveCourseRecord = null;
     let lastResultRecord = null;
 
-    window.addEventListener('load', function() {
-      map = L.map('map').setView([37.5665, 126.9780], 16);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-      applyTheme(currentTheme);
-      if (!userWeight) openWeightModal();
-      else updateWeightDisplay();
-      renderRecords();
-      checkRunningState();
-      updateStreakBadge();
-    });
-
     // ── 테마 ──
     const THEME_EMOJIS = { dark:'🌙', light:'☀️', blue:'💙', green:'💚', purple:'💜', red:'❤️', pink:'🩷', sky:'🩵', mint:'🌿' };
     let currentTheme = localStorage.getItem('theme') || 'dark';
 
     function applyTheme(theme) {
-      // 기존 테마 클래스 제거
       document.body.className = document.body.className
         .replace(/theme-\S+/g, '').replace(/\blight\b/g, '').trim();
       if (theme === 'light') document.body.classList.add('theme-light');
       else if (theme !== 'dark') document.body.classList.add('theme-' + theme);
       currentTheme = theme;
       localStorage.setItem('theme', theme);
-      document.getElementById('themeBtn').textContent = THEME_EMOJIS[theme] || '🎨';
+      const btn = document.getElementById('themeBtn');
+      if (btn) btn.textContent = THEME_EMOJIS[theme] || '🎨';
       document.querySelectorAll('.theme-swatch').forEach(s => {
         s.classList.toggle('active', s.dataset.theme === theme);
       });
-      document.getElementById('theme-panel').classList.remove('open');
+      const panel = document.getElementById('theme-panel');
+      if (panel) panel.classList.remove('open');
     }
+
+    // 페이지 로드 전에 테마 즉시 적용 (깜빡임 방지)
+    applyTheme(currentTheme);
 
     function toggleThemePicker() {
       document.getElementById('theme-panel').classList.toggle('open');
     }
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.theme-picker-wrap')) {
-        document.getElementById('theme-panel').classList.remove('open');
+        const panel = document.getElementById('theme-panel');
+        if (panel) panel.classList.remove('open');
       }
+    });
+
+    window.addEventListener('load', function() {
+      map = L.map('map').setView([37.5665, 126.9780], 16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+      applyTheme(currentTheme); // swatch active 상태 재적용
+      if (!userWeight) openWeightModal();
+      else updateWeightDisplay();
+      renderRecords();
+      checkRunningState();
+      updateStreakBadge();
     });
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━
