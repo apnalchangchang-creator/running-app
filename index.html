@@ -29,14 +29,12 @@
     .stat-value { font-size:32px; font-weight:bold; color:var(--text); }
     .stat-unit { font-size:13px; color:var(--text2); }
 
-    /* 목표 거리 */
     .goal-section { width:100%; max-width:400px; padding:0 16px; margin-bottom:12px; }
     .goal-label { font-size:12px; color:var(--text2); margin-bottom:8px; }
     .goal-options { display:flex; gap:8px; flex-wrap:wrap; }
     .goal-btn { padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:none; color:var(--text2); font-size:13px; cursor:pointer; transition:all 0.2s; }
     .goal-btn.active { background:#f97316; color:white; border-color:#f97316; }
 
-    /* 진행 바 */
     #goal-progress-wrap { width:100%; max-width:400px; padding:0 16px; margin-bottom:12px; display:none; }
     .progress-bar-bg { background:var(--bg2); border-radius:10px; height:8px; overflow:hidden; }
     .progress-bar-fill { height:100%; background:linear-gradient(90deg,#f97316,#ea580c); border-radius:10px; transition:width 0.5s; width:0%; }
@@ -58,13 +56,18 @@
     .tab-content { display:none; width:100%; max-width:480px; padding:16px; }
     .tab-content.active { display:block; }
 
-    .record-card { background:var(--card); border-radius:12px; padding:14px 16px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+    .record-card { background:var(--card); border-radius:12px; padding:14px 16px; margin-bottom:10px; }
+    .record-top { display:flex; justify-content:space-between; align-items:flex-start; }
     .record-date { font-size:12px; color:var(--text2); margin-bottom:4px; }
-    .record-stats { display:flex; gap:12px; flex-wrap:wrap; }
+    .record-stats { display:flex; gap:12px; flex-wrap:wrap; margin-top:6px; }
     .record-stat { text-align:center; }
     .record-stat span { display:block; font-size:11px; color:var(--text2); }
     .record-stat strong { font-size:15px; color:var(--text); }
+    .record-actions { display:flex; gap:6px; align-items:center; }
     .delete-btn { width:auto!important; height:auto!important; background:none!important; color:#555; font-size:18px; border-radius:0!important; border:none; cursor:pointer; }
+    .share-btn-sm { background:none; border:1px solid #FEE500; border-radius:8px; padding:4px 8px; font-size:11px; color:#FEE500; cursor:pointer; white-space:nowrap; }
+    .fav-btn-sm { background:none; border:1px solid var(--border); border-radius:8px; padding:4px 8px; font-size:11px; color:var(--text2); cursor:pointer; white-space:nowrap; }
+    .fav-btn-sm.saved { border-color:#f97316; color:#f97316; }
 
     .stats-summary { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
     .summary-card { background:var(--card); border-radius:12px; padding:14px; text-align:center; }
@@ -81,10 +84,10 @@
     .bar-label { font-size:9px; color:var(--text2); margin-top:4px; text-align:center; }
     .bar-val { font-size:9px; color:#f97316; margin-bottom:2px; }
 
-    /* 체중 모달 */
+    /* ── 모달 공통 ── */
     .modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center; }
     .modal-overlay.show { display:flex; }
-    .modal-box { background:var(--card); border-radius:24px; padding:32px 24px; text-align:center; width:300px; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+    .modal-box { background:var(--card); border-radius:24px; padding:32px 24px; text-align:center; width:300px; box-shadow:0 20px 60px rgba(0,0,0,0.5); max-height:90vh; overflow-y:auto; }
     .modal-icon { font-size:48px; margin-bottom:12px; }
     .modal-box h2 { font-size:20px; font-weight:bold; color:var(--text); margin-bottom:6px; }
     .modal-box p { font-size:13px; color:var(--text2); margin-bottom:24px; line-height:1.5; }
@@ -95,7 +98,7 @@
     .modal-confirm-btn { width:100%; height:52px; border-radius:26px; background:linear-gradient(135deg,#f97316,#ea580c); color:white; font-size:16px; font-weight:bold; border:none; cursor:pointer; box-shadow:0 4px 15px rgba(249,115,22,0.4); transition:transform 0.1s; }
     .modal-confirm-btn:active { transform:scale(0.97); }
 
-    /* 결과 화면 모달 */
+    /* 결과 화면 */
     #result-modal .modal-box { width:320px; }
     .result-header { margin-bottom:20px; }
     .result-header .result-icon { font-size:56px; margin-bottom:8px; }
@@ -107,73 +110,52 @@
     .result-item .r-value { font-size:20px; font-weight:bold; color:#f97316; }
     .result-item .r-unit { font-size:11px; color:var(--text2); }
     .goal-achieved-badge { background:linear-gradient(135deg,#22c55e,#16a34a); color:white; border-radius:20px; padding:6px 16px; font-size:13px; font-weight:bold; margin-bottom:16px; display:inline-block; }
-    /* --- 뱃지 알림용 애니메이션 --- */
-@keyframes badge-pop {
-  0% { transform: scale(0.5); opacity: 0; }
-  70% { transform: scale(1.1); }
-  100% { transform: scale(1); opacity: 1; }
-}
+    .result-share-row { display:flex; gap:8px; margin-bottom:12px; }
+    .kakao-share-btn { flex:1; height:44px; border-radius:22px; background:#FEE500; color:#3C1E1E; font-size:14px; font-weight:bold; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+    .result-new-badges { margin-bottom:16px; }
+    .new-badge-row { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; }
+    .new-badge-chip { background:linear-gradient(135deg,#a855f7,#7c3aed); border-radius:20px; padding:6px 12px; font-size:12px; color:white; animation: popIn 0.4s ease; }
+    @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
 
-@keyframes rotate-glow {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
-}
+    /* ── 즐겨찾기 코스 탭 ── */
+    .fav-empty { text-align:center; color:#555; font-size:14px; margin-top:20px; }
+    .fav-card { background:var(--card); border-radius:12px; padding:14px 16px; margin-bottom:10px; }
+    .fav-card-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .fav-name { font-size:15px; font-weight:bold; color:var(--text); }
+    .fav-delete { background:none; border:none; font-size:16px; cursor:pointer; color:#555; }
+    .fav-meta { font-size:12px; color:var(--text2); margin-bottom:10px; }
+    .fav-stats { display:flex; gap:10px; flex-wrap:wrap; }
+    .fav-stat { text-align:center; }
+    .fav-stat span { display:block; font-size:10px; color:var(--text2); }
+    .fav-stat strong { font-size:14px; color:var(--text); }
+    .fav-load-btn { margin-top:10px; width:100%; padding:8px; border-radius:10px; background:#f97316; color:white; border:none; font-size:13px; font-weight:bold; cursor:pointer; }
 
-/* --- 뱃지 모달 커스텀 스타일 --- */
-.badge-modal-content {
-  background: linear-gradient(135deg, var(--card), var(--bg2)) !important;
-  border: 2px solid #f97316 !important;
-  position: relative;
-  overflow: hidden;
-  animation: badge-pop 0.5s cubic-bezier(0.17, 0.67, 0.83, 0.67);
-}
+    /* 코스 저장 모달 */
+    #save-course-modal .modal-box { width:300px; }
+    .course-name-input { width:100%; padding:12px 16px; border-radius:14px; border:2px solid var(--border); background:var(--bg2); color:var(--text); font-size:16px; outline:none; margin-bottom:16px; transition:border-color 0.2s; }
+    .course-name-input:focus { border-color:#f97316; }
 
-/* 배경 뒤에서 회전하는 빛 효과 */
-.badge-glow {
-  position: absolute;
-  top: 40%; left: 50%;
-  width: 300px; height: 300px;
-  background: conic-gradient(from 0deg, transparent, rgba(249,115,22,0.3), transparent);
-  animation: rotate-glow 4s linear infinite;
-  z-index: 0;
-}
+    /* ── 뱃지 탭 ── */
+    .badge-section-title { font-size:13px; color:var(--text2); margin-bottom:10px; margin-top:16px; }
+    .badge-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+    .badge-card { background:var(--card); border-radius:16px; padding:16px 8px; text-align:center; transition:transform 0.2s; }
+    .badge-card.locked { opacity:0.35; filter:grayscale(1); }
+    .badge-card:not(.locked) { box-shadow:0 4px 15px rgba(249,115,22,0.2); }
+    .badge-emoji { font-size:32px; margin-bottom:6px; }
+    .badge-name { font-size:11px; font-weight:bold; color:var(--text); margin-bottom:2px; }
+    .badge-desc { font-size:9px; color:var(--text2); line-height:1.3; }
+    .badge-earned-date { font-size:9px; color:#f97316; margin-top:3px; }
+    .badges-progress { background:var(--card); border-radius:12px; padding:14px 16px; margin-bottom:16px; display:flex; align-items:center; gap:14px; }
+    .bp-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#f97316,#ea580c); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:bold; color:white; flex-shrink:0; }
+    .bp-text { font-size:13px; color:var(--text2); line-height:1.5; }
+    .bp-text strong { color:var(--text); font-size:15px; }
 
-.badge-icon-large {
-  font-size: 84px;
-  margin-top: 10px;
-  margin-bottom: 15px;
-  position: relative;
-  z-index: 1;
-  /* 아이콘이 떠 있는 듯한 그림자 */
-  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
-}
-
-.badge-name {
-  font-size: 24px;
-  font-weight: 800;
-  color: #f97316;
-  margin-bottom: 10px;
-  position: relative;
-  z-index: 1;
-}
-
-.badge-desc {
-  font-size: 14px;
-  color: var(--text2);
-  line-height: 1.5;
-  margin-bottom: 25px;
-  padding: 0 10px;
-  position: relative;
-  z-index: 1;
-}
-
-/* 획득 버튼 강조 */
-.badge-confirm-btn {
-  background: #f97316 !important;
-  box-shadow: 0 0 20px rgba(249,115,22,0.4) !important;
-  position: relative;
-  z-index: 1;
-}
+    /* 뱃지 획득 팝업 */
+    #badge-popup { position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:linear-gradient(135deg,#a855f7,#7c3aed); border-radius:20px; padding:12px 20px; display:flex; align-items:center; gap:10px; z-index:1000; opacity:0; transition:all 0.4s; pointer-events:none; box-shadow:0 8px 30px rgba(168,85,247,0.5); }
+    #badge-popup.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    .bp-icon { font-size:28px; }
+    .bp-info strong { display:block; font-size:13px; color:white; font-weight:bold; }
+    .bp-info span { font-size:11px; color:rgba(255,255,255,0.8); }
   </style>
 </head>
 <body>
@@ -211,7 +193,6 @@
     </div>
   </div>
 
-  <!-- 목표 거리 -->
   <div class="goal-section">
     <div class="goal-label">🎯 목표 거리 (선택)</div>
     <div class="goal-options">
@@ -225,7 +206,6 @@
     </div>
   </div>
 
-  <!-- 진행 바 -->
   <div id="goal-progress-wrap">
     <div class="progress-bar-bg">
       <div class="progress-bar-fill" id="progress-fill"></div>
@@ -263,23 +243,46 @@
         <p id="result-subtitle"></p>
       </div>
       <div id="goal-achieved-wrap"></div>
+      <div id="result-new-badges" class="result-new-badges" style="display:none">
+        <div style="font-size:12px;color:#a855f7;margin-bottom:6px;font-weight:bold;">🏅 새 뱃지 획득!</div>
+        <div class="new-badge-row" id="new-badge-chips"></div>
+      </div>
       <div class="result-grid">
         <div class="result-item"><div class="r-label">거리</div><div class="r-value" id="r-distance">-</div><div class="r-unit">km</div></div>
         <div class="result-item"><div class="r-label">시간</div><div class="r-value" id="r-time">-</div><div class="r-unit"></div></div>
         <div class="result-item"><div class="r-label">페이스</div><div class="r-value" id="r-pace">-</div><div class="r-unit">/ km</div></div>
         <div class="result-item"><div class="r-label">칼로리</div><div class="r-value" id="r-calories">-</div><div class="r-unit">kcal</div></div>
       </div>
+      <div class="result-share-row">
+        <button class="kakao-share-btn" onclick="shareToKakao()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#3C1E1E"><path d="M12 3C6.477 3 2 6.477 2 10.8c0 2.7 1.6 5.1 4 6.6l-1 3.8 4.3-2.8c.9.2 1.8.2 2.7.2 5.523 0 10-3.477 10-7.8S17.523 3 12 3z"/></svg>
+          카카오톡 공유
+        </button>
+      </div>
       <button class="modal-confirm-btn" onclick="closeResultModal()">확인</button>
     </div>
-  </div> <div class="modal-overlay" id="badge-modal">
-  <div class="modal-box badge-modal-content">
-    <div class="badge-glow"></div>
-    <div id="badge-display-icon" class="badge-icon-large">🏆</div>
-    <h2 id="badge-display-name" class="badge-name">새로운 뱃지!</h2>
-    <p id="badge-display-desc" class="badge-desc">축하합니다! 조건을 달성했습니다.</p>
-    <button class="modal-confirm-btn badge-confirm-btn" onclick="closeBadgeModal()">와우, 확인!</button>
   </div>
-</div>
+
+  <!-- 코스 저장 모달 -->
+  <div class="modal-overlay" id="save-course-modal">
+    <div class="modal-box">
+      <div class="modal-icon">⭐</div>
+      <h2>코스 저장</h2>
+      <p>이 코스에 이름을 붙여주세요</p>
+      <input type="text" class="course-name-input" id="course-name-input" placeholder="예: 한강 5km 코스" maxlength="30">
+      <button class="modal-confirm-btn" onclick="confirmSaveCourse()">저장하기</button>
+      <button onclick="closeSaveCourseModal()" style="background:none;border:none;color:var(--text2);font-size:13px;margin-top:12px;cursor:pointer;width:100%;">취소</button>
+    </div>
+  </div>
+
+  <!-- 뱃지 획득 팝업 -->
+  <div id="badge-popup">
+    <div class="bp-icon" id="bp-icon">🏅</div>
+    <div class="bp-info">
+      <strong id="bp-name">뱃지 획득!</strong>
+      <span id="bp-desc">설명</span>
+    </div>
+  </div>
 
   <!-- 탭 바 -->
   <div class="tab-bar">
@@ -288,6 +291,8 @@
     <button class="tab-btn" onclick="switchTab('monthly')">월간</button>
     <button class="tab-btn" onclick="switchTab('yearly')">연간</button>
     <button class="tab-btn" onclick="switchTab('all')">전체</button>
+    <button class="tab-btn" onclick="switchTab('badges')">🏅 뱃지</button>
+    <button class="tab-btn" onclick="switchTab('courses')">⭐ 코스</button>
   </div>
 
   <div class="tab-content active" id="tab-recent">
@@ -312,8 +317,60 @@
     <div class="chart-wrap"><div class="chart-title">년도별 총 거리 (km)</div><div class="bar-chart" id="all-chart"></div></div>
   </div>
 
+  <!-- 뱃지 탭 -->
+  <div class="tab-content" id="tab-badges">
+    <div id="badges-tab-content"></div>
+  </div>
+
+  <!-- 즐겨찾기 코스 탭 -->
+  <div class="tab-content" id="tab-courses">
+    <div id="courses-list"></div>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
+    // ━━━━━━━━━━━━━━━━━━━━━━━━
+    //  뱃지 정의
+    // ━━━━━━━━━━━━━━━━━━━━━━━━
+    const BADGE_DEFS = [
+      // 거리 뱃지
+      { id:'first_run',    emoji:'👟', name:'첫 발걸음',     desc:'첫 러닝 완료',              check:(r,all)=> all.length >= 1 },
+      { id:'dist_5',       emoji:'🌟', name:'5km 돌파',      desc:'누적 5km 달성',             check:(r,all)=> totalAllDist(all) >= 5 },
+      { id:'dist_10',      emoji:'🔥', name:'10km 달성',     desc:'누적 10km 달성',            check:(r,all)=> totalAllDist(all) >= 10 },
+      { id:'dist_50',      emoji:'💫', name:'50km 러너',     desc:'누적 50km 달성',            check:(r,all)=> totalAllDist(all) >= 50 },
+      { id:'dist_100',     emoji:'🏆', name:'100km 마스터',  desc:'누적 100km 달성',           check:(r,all)=> totalAllDist(all) >= 100 },
+      { id:'single_5',     emoji:'🎯', name:'5km 완주',      desc:'한 번에 5km 이상',          check:(r,all)=> parseFloat(r.distance) >= 5 },
+      { id:'single_10',    emoji:'🚀', name:'10km 완주',     desc:'한 번에 10km 이상',         check:(r,all)=> parseFloat(r.distance) >= 10 },
+      { id:'single_half',  emoji:'🦅', name:'하프 완주',     desc:'한 번에 21km 이상',         check:(r,all)=> parseFloat(r.distance) >= 21 },
+      { id:'single_full',  emoji:'👑', name:'풀마라톤',      desc:'한 번에 42km 이상',         check:(r,all)=> parseFloat(r.distance) >= 42 },
+      // 페이스 뱃지
+      { id:'pace_sub7',    emoji:'⚡', name:'스피드런',      desc:'페이스 7분 미만',           check:(r,all)=> paceToSec(r.pace) > 0 && paceToSec(r.pace) < 420 },
+      { id:'pace_sub6',    emoji:'💨', name:'6분 페이서',    desc:'페이스 6분 미만',           check:(r,all)=> paceToSec(r.pace) > 0 && paceToSec(r.pace) < 360 },
+      { id:'pace_sub5',    emoji:'🌪️', name:'엘리트 러너',   desc:'페이스 5분 미만',           check:(r,all)=> paceToSec(r.pace) > 0 && paceToSec(r.pace) < 300 },
+      // 스트릭 뱃지
+      { id:'streak3',      emoji:'🔥', name:'3일 연속',      desc:'3일 연속 러닝',             check:(r,all)=> calcStreak() >= 3 },
+      { id:'streak7',      emoji:'🔥', name:'7일 연속',      desc:'7일 연속 러닝 - 불굴!',     check:(r,all)=> calcStreak() >= 7 },
+      { id:'streak30',     emoji:'💎', name:'한 달 챌린지',  desc:'30일 연속 러닝',            check:(r,all)=> calcStreak() >= 30 },
+      // 칼로리 뱃지
+      { id:'cal_500',      emoji:'🍔', name:'버거 소각',     desc:'한 번에 500kcal 소모',      check:(r,all)=> r.calories >= 500 },
+      { id:'cal_1000',     emoji:'🍕', name:'피자 소각',     desc:'한 번에 1000kcal 소모',     check:(r,all)=> r.calories >= 1000 },
+      // 횟수 뱃지
+      { id:'runs_10',      emoji:'🥈', name:'10회 러너',     desc:'총 10회 러닝 완료',         check:(r,all)=> all.length >= 10 },
+      { id:'runs_30',      emoji:'🥇', name:'30회 러너',     desc:'총 30회 러닝 완료',         check:(r,all)=> all.length >= 30 },
+      { id:'runs_100',     emoji:'🏅', name:'100회 달성',    desc:'총 100회 러닝 완료',        check:(r,all)=> all.length >= 100 },
+    ];
+
+    function totalAllDist(all) { return all.reduce((s,r) => s + parseFloat(r.distance), 0); }
+    function paceToSec(pace) {
+      if (!pace || pace === `--'--"`) return 0;
+      const m = pace.match(/(\d+)'(\d+)"/);
+      if (!m) return 0;
+      return parseInt(m[1])*60 + parseInt(m[2]);
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━
+    //  상태
+    // ━━━━━━━━━━━━━━━━━━━━━━━━
     let map;
     let watchId = null, timerInterval = null;
     let seconds = 0, totalDistance = 0;
@@ -323,6 +380,10 @@
     let goalDistance = 0;
     let records = JSON.parse(localStorage.getItem('runRecords') || '[]');
     let userWeight = parseFloat(localStorage.getItem('userWeight')) || 0;
+    let earnedBadges = JSON.parse(localStorage.getItem('earnedBadges') || '{}'); // {id: dateString}
+    let favCourses = JSON.parse(localStorage.getItem('favCourses') || '[]');
+    let pendingSaveCourseRecord = null;
+    let lastResultRecord = null;
 
     window.addEventListener('load', function() {
       map = L.map('map').setView([37.5665, 126.9780], 16);
@@ -360,7 +421,6 @@
       }
       return streak;
     }
-
     function updateStreakBadge() {
       const streak = calcStreak();
       document.getElementById('streak-badge').textContent = `🔥 ${streak}`;
@@ -374,7 +434,6 @@
       document.getElementById('goal-progress-wrap').style.display = km > 0 ? 'block' : 'none';
       updateGoalProgress();
     }
-
     function updateGoalProgress() {
       if (goalDistance === 0) return;
       const pct = Math.min((totalDistance / goalDistance) * 100, 100);
@@ -388,7 +447,6 @@
       document.getElementById('weight-modal').classList.add('show');
       if (userWeight) document.getElementById('weight-input').value = userWeight;
     }
-
     function saveWeight() {
       const w = parseFloat(document.getElementById('weight-input').value);
       if (!w || w < 30 || w > 200) { alert('30~200kg 사이로 입력해주세요'); return; }
@@ -397,12 +455,11 @@
       document.getElementById('weight-modal').classList.remove('show');
       updateWeightDisplay();
     }
-
     function updateWeightDisplay() {
       document.getElementById('weight-display').textContent = `⚖️ 내 체중: ${userWeight}kg (탭해서 변경)`;
     }
 
-    // ── 페이스 반영 칼로리 ──
+    // ── 칼로리 ──
     function calcCalories() {
       if (!userWeight || seconds === 0) return 0;
       let met = 8;
@@ -417,17 +474,249 @@
       return Math.round(met * userWeight * (seconds / 3600));
     }
 
+    // ━━━━━━━━━━━━━━━━━━━━━━━━
+    //  뱃지 시스템
+    // ━━━━━━━━━━━━━━━━━━━━━━━━
+    function checkBadges(newRecord) {
+      const newlyEarned = [];
+      BADGE_DEFS.forEach(badge => {
+        if (earnedBadges[badge.id]) return;
+        try {
+          if (badge.check(newRecord, records)) {
+            const dateStr = new Date().toLocaleDateString('ko-KR',{month:'short',day:'numeric'});
+            earnedBadges[badge.id] = dateStr;
+            newlyEarned.push(badge);
+          }
+        } catch(e) {}
+      });
+      if (newlyEarned.length > 0) {
+        localStorage.setItem('earnedBadges', JSON.stringify(earnedBadges));
+        showBadgePopupQueue(newlyEarned);
+      }
+      return newlyEarned;
+    }
+
+    let badgePopupQueue = [];
+    let badgePopupActive = false;
+    function showBadgePopupQueue(badges) {
+      badgePopupQueue = badgePopupQueue.concat(badges);
+      if (!badgePopupActive) nextBadgePopup();
+    }
+    function nextBadgePopup() {
+      if (badgePopupQueue.length === 0) { badgePopupActive = false; return; }
+      badgePopupActive = true;
+      const badge = badgePopupQueue.shift();
+      const popup = document.getElementById('badge-popup');
+      document.getElementById('bp-icon').textContent = badge.emoji;
+      document.getElementById('bp-name').textContent = badge.name + ' 획득!';
+      document.getElementById('bp-desc').textContent = badge.desc;
+      popup.classList.add('show');
+      setTimeout(() => {
+        popup.classList.remove('show');
+        setTimeout(nextBadgePopup, 400);
+      }, 2500);
+    }
+
+    function renderBadgesTab() {
+      const earned = BADGE_DEFS.filter(b => earnedBadges[b.id]);
+      const locked = BADGE_DEFS.filter(b => !earnedBadges[b.id]);
+      let html = `
+        <div class="badges-progress">
+          <div class="bp-circle">${earned.length}</div>
+          <div class="bp-text"><strong>${earned.length} / ${BADGE_DEFS.length} 뱃지 달성</strong><br>달릴수록 더 많은 뱃지가 기다려요 🏅</div>
+        </div>`;
+      if (earned.length > 0) {
+        html += `<div class="badge-section-title">✅ 획득한 뱃지 (${earned.length})</div><div class="badge-grid">`;
+        earned.forEach(b => {
+          html += `<div class="badge-card">
+            <div class="badge-emoji">${b.emoji}</div>
+            <div class="badge-name">${b.name}</div>
+            <div class="badge-desc">${b.desc}</div>
+            <div class="badge-earned-date">${earnedBadges[b.id]}</div>
+          </div>`;
+        });
+        html += '</div>';
+      }
+      if (locked.length > 0) {
+        html += `<div class="badge-section-title">🔒 미획득 뱃지 (${locked.length})</div><div class="badge-grid">`;
+        locked.forEach(b => {
+          html += `<div class="badge-card locked">
+            <div class="badge-emoji">${b.emoji}</div>
+            <div class="badge-name">${b.name}</div>
+            <div class="badge-desc">${b.desc}</div>
+          </div>`;
+        });
+        html += '</div>';
+      }
+      document.getElementById('badges-tab-content').innerHTML = html;
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━
+    //  카카오톡 공유
+    // ━━━━━━━━━━━━━━━━━━━━━━━━
+    function buildShareText(record) {
+      const streak = calcStreak();
+      const totalDist = records.reduce((s,r) => s + parseFloat(r.distance), 0).toFixed(1);
+      let text = `🏃 MY RUN 기록\n\n`;
+      text += `📍 ${record.date}\n`;
+      text += `📏 거리: ${record.distance}km\n`;
+      text += `⏱️ 시간: ${record.time}\n`;
+      text += `⚡ 페이스: ${record.pace}/km\n`;
+      if (record.calories) text += `🔥 칼로리: ${record.calories}kcal\n`;
+      text += `\n🔥 ${streak}일 연속 / 누적 ${totalDist}km\n`;
+      text += `\n#러닝 #마이런 #오늘도달렸다`;
+      return text;
+    }
+
+    function shareToKakao() {
+      const record = lastResultRecord;
+      if (!record) return;
+      const text = buildShareText(record);
+      // 카카오 SDK가 없을 경우 클립보드 복사 + 안내
+      if (typeof Kakao !== 'undefined' && Kakao.isInitialized && Kakao.isInitialized()) {
+        Kakao.Share.sendDefault({
+          objectType: 'text',
+          text: text,
+          link: { mobileWebUrl: location.href, webUrl: location.href }
+        });
+      } else {
+        // 클립보드에 복사 후 카카오톡으로 안내
+        navigator.clipboard.writeText(text).then(() => {
+          alert('📋 기록이 클립보드에 복사됐어요!\n카카오톡을 열어서 붙여넣기 하세요 😊\n\n' + text);
+        }).catch(() => {
+          alert('아래 내용을 복사해서 공유하세요:\n\n' + text);
+        });
+      }
+    }
+
+    function shareRecord(recordId) {
+      const record = records.find(r => r.id === recordId);
+      if (!record) return;
+      lastResultRecord = record;
+      shareToKakao();
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━
+    //  즐겨찾기 코스
+    // ━━━━━━━━━━━━━━━━━━━━━━━━
+    function openSaveCourseModal(recordId) {
+      pendingSaveCourseRecord = records.find(r => r.id === recordId);
+      if (!pendingSaveCourseRecord) return;
+      // 이미 저장된 코스인지 확인 (같은 recordId)
+      if (favCourses.some(c => c.recordId === recordId)) {
+        alert('이미 즐겨찾기에 저장된 코스예요! ⭐');
+        return;
+      }
+      document.getElementById('course-name-input').value = '';
+      document.getElementById('save-course-modal').classList.add('show');
+    }
+
+    function closeSaveCourseModal() {
+      document.getElementById('save-course-modal').classList.remove('show');
+      pendingSaveCourseRecord = null;
+    }
+
+    function confirmSaveCourse() {
+      const name = document.getElementById('course-name-input').value.trim();
+      if (!name) { alert('코스 이름을 입력해주세요'); return; }
+      if (!pendingSaveCourseRecord) return;
+      const course = {
+        id: Date.now(),
+        recordId: pendingSaveCourseRecord.id,
+        name: name,
+        distance: pendingSaveCourseRecord.distance,
+        time: pendingSaveCourseRecord.time,
+        pace: pendingSaveCourseRecord.pace,
+        calories: pendingSaveCourseRecord.calories,
+        savedDate: new Date().toLocaleDateString('ko-KR', {month:'long',day:'numeric'}),
+        routeCoords: pendingSaveCourseRecord.routeCoords || []
+      };
+      favCourses.unshift(course);
+      localStorage.setItem('favCourses', JSON.stringify(favCourses));
+      closeSaveCourseModal();
+      renderFavCourses();
+      alert(`⭐ "${name}" 코스가 저장됐어요!`);
+    }
+
+    function deleteFavCourse(id) {
+      favCourses = favCourses.filter(c => c.id !== id);
+      localStorage.setItem('favCourses', JSON.stringify(favCourses));
+      renderFavCourses();
+    }
+
+    function loadFavCourse(id) {
+      const course = favCourses.find(c => c.id === id);
+      if (!course) return;
+      // 이전 경로 지우기
+      if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+      if (window._currentMarker) { map.removeLayer(window._currentMarker); window._currentMarker = null; }
+      if (startMarker) { map.removeLayer(startMarker); startMarker = null; }
+      // 저장된 경로 표시
+      if (course.routeCoords && course.routeCoords.length > 1) {
+        routeLine = L.polyline(course.routeCoords, {color:'#a855f7', weight:4, dashArray:'8,6'}).addTo(map);
+        map.fitBounds(routeLine.getBounds(), {padding:[20,20]});
+        startMarker = L.circleMarker(course.routeCoords[0], {color:'#a855f7',fillColor:'#a855f7',fillOpacity:1,radius:8}).addTo(map).bindPopup(`⭐ ${course.name} 시작점`).openPopup();
+      }
+      // 목표 거리 설정
+      const dist = parseFloat(course.distance);
+      goalDistance = dist;
+      const closest = [0,1,3,5,10,21,42].reduce((a,b) => Math.abs(b-dist) < Math.abs(a-dist) ? b : a);
+      document.querySelectorAll('.goal-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.goal-btn').forEach(b => {
+        const labels = {'없음':0,'1km':1,'3km':3,'5km':5,'10km':10,'하프':21,'풀마라톤':42};
+        if (labels[b.textContent] === closest) b.classList.add('active');
+      });
+      document.getElementById('goal-progress-wrap').style.display = dist > 0 ? 'block' : 'none';
+      alert(`⭐ "${course.name}" 코스를 지도에 표시했어요!\n같은 코스로 달려보세요 🏃`);
+      // 스크롤 위로
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    function renderFavCourses() {
+      const container = document.getElementById('courses-list');
+      if (favCourses.length === 0) {
+        container.innerHTML = '<div class="fav-empty">⭐ 즐겨찾기 코스가 없어요<br><br>러닝 기록에서 ⭐ 버튼으로<br>마음에 드는 코스를 저장해보세요!</div>';
+        return;
+      }
+      container.innerHTML = favCourses.map(c => `
+        <div class="fav-card">
+          <div class="fav-card-top">
+            <div class="fav-name">⭐ ${c.name}</div>
+            <button class="fav-delete" onclick="deleteFavCourse(${c.id})">🗑️</button>
+          </div>
+          <div class="fav-meta">저장일: ${c.savedDate} · ${c.routeCoords && c.routeCoords.length > 0 ? '경로 있음 📍' : '경로 없음'}</div>
+          <div class="fav-stats">
+            <div class="fav-stat"><strong>${c.distance}</strong><span>km</span></div>
+            <div class="fav-stat"><strong>${c.time}</strong><span>시간</span></div>
+            <div class="fav-stat"><strong>${c.pace}</strong><span>페이스</span></div>
+            ${c.calories ? `<div class="fav-stat"><strong>${c.calories}</strong><span>kcal</span></div>` : ''}
+          </div>
+          <button class="fav-load-btn" onclick="loadFavCourse(${c.id})">📍 이 코스로 달리기</button>
+        </div>`).join('');
+    }
+
     // ── 결과 화면 ──
-    function showResultModal(dist, time, pace, calories) {
-      const goalAchieved = goalDistance > 0 && dist >= goalDistance;
+    function showResultModal(dist, time, pace, calories, newRecord) {
+      lastResultRecord = newRecord;
+      const goalAchieved = goalDistance > 0 && parseFloat(dist) >= goalDistance;
       document.getElementById('result-icon').textContent = goalAchieved ? '🏆' : '🏃';
       document.getElementById('result-title').textContent = goalAchieved ? '목표 달성!' : '러닝 완료!';
       document.getElementById('result-subtitle').textContent = goalAchieved
         ? `${goalDistance}km 목표를 달성했어요!`
         : '오늘도 수고했어요!';
       document.getElementById('goal-achieved-wrap').innerHTML = goalAchieved
-        ? `<div class="goal-achieved-badge">🎯 ${goalDistance}km 목표 달성!</div>`
-        : '';
+        ? `<div class="goal-achieved-badge">🎯 ${goalDistance}km 목표 달성!</div>` : '';
+
+      // 새 뱃지 표시
+      const newBadges = checkBadges(newRecord);
+      if (newBadges.length > 0) {
+        document.getElementById('result-new-badges').style.display = 'block';
+        document.getElementById('new-badge-chips').innerHTML = newBadges.map(b =>
+          `<div class="new-badge-chip">${b.emoji} ${b.name}</div>`).join('');
+      } else {
+        document.getElementById('result-new-badges').style.display = 'none';
+      }
+
       document.getElementById('r-distance').textContent = dist;
       document.getElementById('r-time').textContent = time;
       document.getElementById('r-pace').textContent = pace;
@@ -441,8 +730,9 @@
 
     // ── 탭 ──
     function switchTab(name) {
+      const tabNames = ['recent','weekly','monthly','yearly','all','badges','courses'];
       document.querySelectorAll('.tab-btn').forEach((b, i) => {
-        b.classList.toggle('active', ['recent','weekly','monthly','yearly','all'][i] === name);
+        b.classList.toggle('active', tabNames[i] === name);
       });
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.getElementById('tab-' + name).classList.add('active');
@@ -450,6 +740,8 @@
       if (name === 'monthly') renderMonthly();
       if (name === 'yearly') renderYearly();
       if (name === 'all') renderAll();
+      if (name === 'badges') renderBadgesTab();
+      if (name === 'courses') renderFavCourses();
     }
 
     function renderWeekly() {
@@ -462,7 +754,6 @@
       renderBarChart('weekly-chart', buckets, ['월','화','수','목','금','토','일']);
       renderSummary('weekly-summary', records.filter(r => new Date(r.id) >= monday), runCount, 7, '주');
     }
-
     function renderMonthly() {
       const now = new Date();
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -472,7 +763,6 @@
       renderBarChart('monthly-chart', buckets, Array.from({length:daysInMonth},(_,i)=>i+1));
       renderSummary('monthly-summary', records.filter(r => { const d = new Date(r.id); return d >= firstDay && d.getMonth() === now.getMonth(); }), runCount, daysInMonth, '달');
     }
-
     function renderYearly() {
       const now = new Date();
       const buckets = Array(12).fill(0); let runCount = 0;
@@ -480,7 +770,6 @@
       renderBarChart('yearly-chart', buckets, ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']);
       renderSummary('yearly-summary', records.filter(r => new Date(r.id).getFullYear() === now.getFullYear()), runCount, 52, '년');
     }
-
     function renderAll() {
       if (records.length === 0) { document.getElementById('all-chart').innerHTML = '<p style="color:#555;font-size:13px;">기록이 없어요</p>'; document.getElementById('all-summary').innerHTML = ''; return; }
       const yearMap = {};
@@ -489,7 +778,6 @@
       renderBarChart('all-chart', years.map(y => yearMap[y]), years);
       renderSummary('all-summary', records, records.length, null, '전체');
     }
-
     function renderBarChart(id, buckets, labels) {
       const max = Math.max(...buckets, 0.01);
       document.getElementById(id).innerHTML = buckets.map((v,i) => `
@@ -499,7 +787,6 @@
           <div class="bar-label">${labels[i]}</div>
         </div>`).join('');
     }
-
     function renderSummary(id, filteredRecords, runCount, periodDays, periodLabel) {
       const totalDist = filteredRecords.reduce((s,r) => s+parseFloat(r.distance), 0);
       const totalSec = filteredRecords.reduce((s,r) => { const [m,sec] = r.time.split(':').map(Number); return s+m*60+sec; }, 0);
@@ -522,7 +809,6 @@
       if (Math.floor((Date.now()-data.startTime)/1000) > 86400) { localStorage.removeItem('currentRun'); return; }
       document.getElementById('resume-banner').style.display = 'block';
     }
-
     function resumeRun() {
       const saved = localStorage.getItem('currentRun');
       if (!saved) return;
@@ -541,7 +827,6 @@
       document.getElementById('startBtn').style.display = 'none';
       document.getElementById('stopBtn').style.display = 'block';
     }
-
     function saveRunningState() {
       if (!isRunning) return;
       localStorage.setItem('currentRun', JSON.stringify({startTime:Date.now()-seconds*1000, totalDistance, routeCoords}));
@@ -553,6 +838,7 @@
       lastPosition = null; recentPositions = []; startMarker = null; currentPaceSeconds = 0;
       document.getElementById('startBtn').style.display = 'none';
       document.getElementById('stopBtn').style.display = 'block';
+      // 즐겨찾기 코스 경로(보라색 점선) 유지하고 싶으면 지우지 않음
       if (goalDistance > 0) document.getElementById('goal-progress-wrap').style.display = 'block';
       localStorage.setItem('currentRun', JSON.stringify({startTime:Date.now(), totalDistance:0, routeCoords:[]}));
       startTracking();
@@ -579,7 +865,7 @@
             startMarker = L.circleMarker(latlng, {color:'#f97316',fillColor:'#f97316',fillOpacity:1,radius:8}).addTo(map).bindPopup('시작 지점').openPopup();
           }
           routeCoords.push(latlng);
-          if (routeLine) map.removeLayer(routeLine);
+          if (routeLine && routeLine.options && routeLine.options.color === '#f97316') map.removeLayer(routeLine);
           routeLine = L.polyline(routeCoords, {color:'#f97316',weight:4}).addTo(map);
           if (lastPosition) {
             const dist = calcDistance(lastPosition.lat, lastPosition.lng, latitude, longitude);
@@ -588,7 +874,7 @@
           }
           if (window._currentMarker) map.removeLayer(window._currentMarker);
           window._currentMarker = L.circleMarker(latlng, {color:'white',fillColor:'#3b82f6',fillOpacity:1,radius:7,weight:2}).addTo(map);
-          const prevKm = Math.floor(totalDistance - (lastPosition ? calcDistance(lastPosition.lat,lastPosition.lng,latitude,longitude) : 0));
+          const prevKm = lastPosition ? Math.floor(totalDistance - calcDistance(lastPosition.lat,lastPosition.lng,latitude,longitude)) : 0;
           const currKm = Math.floor(totalDistance);
           if (currKm > prevKm && currKm > 0) {
             if (navigator.vibrate) navigator.vibrate([200,100,200]);
@@ -639,18 +925,20 @@
       const finalTime = formatTime(seconds);
       if (totalDistance > 0.01) {
         const now = new Date();
-        records.unshift({
+        const newRecord = {
           id: Date.now(),
           date: now.toLocaleDateString('ko-KR', {month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}),
           distance: finalDist,
           time: finalTime,
           pace: finalPace,
-          calories: finalCalories
-        });
+          calories: finalCalories,
+          routeCoords: routeCoords.slice()
+        };
+        records.unshift(newRecord);
         localStorage.setItem('runRecords', JSON.stringify(records));
         renderRecords();
         updateStreakBadge();
-        showResultModal(finalDist, finalTime, finalPace, finalCalories);
+        showResultModal(finalDist, finalTime, finalPace, finalCalories, newRecord);
       }
       seconds = 0; totalDistance = 0; lastPosition = null;
       routeCoords = []; startMarker = null; recentPositions = []; currentPaceSeconds = 0;
@@ -669,18 +957,25 @@
         list.innerHTML = '<p style="text-align:center;color:#555;font-size:14px;margin-top:10px;">아직 기록이 없어요. 달려보세요! 🏃</p>';
         return;
       }
+      const isFav = (id) => favCourses.some(c => c.recordId === id);
       list.innerHTML = records.map(r => `
         <div class="record-card">
-          <div>
+          <div class="record-top">
             <div class="record-date">${r.date}</div>
-            <div class="record-stats">
-              <div class="record-stat"><strong>${r.distance}</strong><span>km</span></div>
-              <div class="record-stat"><strong>${r.time}</strong><span>시간</span></div>
-              <div class="record-stat"><strong>${r.pace}</strong><span>페이스</span></div>
-              ${r.calories ? `<div class="record-stat"><strong>${r.calories}</strong><span>kcal</span></div>` : ''}
+            <div class="record-actions">
+              <button class="share-btn-sm" onclick="shareRecord(${r.id})">💬 공유</button>
+              <button class="fav-btn-sm ${isFav(r.id)?'saved':''}" onclick="openSaveCourseModal(${r.id})" title="즐겨찾기 코스 저장">
+                ${isFav(r.id) ? '⭐ 저장됨' : '⭐ 코스저장'}
+              </button>
+              <button class="delete-btn" onclick="deleteRecord(${r.id})">🗑️</button>
             </div>
           </div>
-          <button class="delete-btn" onclick="deleteRecord(${r.id})">🗑️</button>
+          <div class="record-stats">
+            <div class="record-stat"><strong>${r.distance}</strong><span>km</span></div>
+            <div class="record-stat"><strong>${r.time}</strong><span>시간</span></div>
+            <div class="record-stat"><strong>${r.pace}</strong><span>페이스</span></div>
+            ${r.calories ? `<div class="record-stat"><strong>${r.calories}</strong><span>kcal</span></div>` : ''}
+          </div>
         </div>`).join('');
     }
 
@@ -693,7 +988,6 @@
     function formatTime(s) {
       return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
     }
-
     function calcDistance(lat1, lng1, lat2, lng2) {
       const R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
       const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
