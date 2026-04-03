@@ -11,14 +11,54 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    :root { --bg:#111; --bg2:#1a1a1a; --card:#1f1f1f; --text:white; --text2:#aaa; --border:#333; }
-    body.light { --bg:#f5f5f5; --bg2:#e8e8e8; --card:#ffffff; --text:#111; --text2:#666; --border:#ddd; }
+
+    /* ── 테마 변수 (기본: 다크) ── */
+    :root {
+      --bg:#111; --bg2:#1a1a1a; --card:#1f1f1f; --text:white; --text2:#aaa; --border:#333;
+      --accent:#f97316; --accent2:#ea580c; --accent-glow:rgba(249,115,22,0.4);
+    }
+    /* 라이트 */
+    body.theme-light { --bg:#f5f5f5; --bg2:#e8e8e8; --card:#ffffff; --text:#111; --text2:#666; --border:#ddd; --accent:#f97316; --accent2:#ea580c; --accent-glow:rgba(249,115,22,0.3); }
+    /* 블루 */
+    body.theme-blue { --bg:#0a0f1e; --bg2:#111827; --card:#1e2a3a; --text:#e2e8f0; --text2:#94a3b8; --border:#2d3f55; --accent:#3b82f6; --accent2:#2563eb; --accent-glow:rgba(59,130,246,0.4); }
+    /* 그린 */
+    body.theme-green { --bg:#0a1a0f; --bg2:#0f2418; --card:#152a1c; --text:#dcfce7; --text2:#86efac; --border:#1e4028; --accent:#22c55e; --accent2:#16a34a; --accent-glow:rgba(34,197,94,0.4); }
+    /* 퍼플 */
+    body.theme-purple { --bg:#0f0a1e; --bg2:#160f2a; --card:#1e1535; --text:#f3e8ff; --text2:#c084fc; --border:#2d1f4a; --accent:#a855f7; --accent2:#7c3aed; --accent-glow:rgba(168,85,247,0.4); }
+    /* 레드 */
+    body.theme-red { --bg:#1a0a0a; --bg2:#240f0f; --card:#2a1515; --text:#fee2e2; --text2:#fca5a5; --border:#3f1e1e; --accent:#ef4444; --accent2:#dc2626; --accent-glow:rgba(239,68,68,0.4); }
+    /* 핑크 */
+    body.theme-pink { --bg:#1a0a12; --bg2:#240f1a; --card:#2a1520; --text:#fce7f3; --text2:#f9a8d4; --border:#3f1e2d; --accent:#ec4899; --accent2:#db2777; --accent-glow:rgba(236,72,153,0.4); }
+    /* 라이트 블루 */
+    body.theme-sky { --bg:#f0f9ff; --bg2:#e0f2fe; --card:#ffffff; --text:#0c4a6e; --text2:#0369a1; --border:#bae6fd; --accent:#0284c7; --accent2:#0369a1; --accent-glow:rgba(2,132,199,0.3); }
+    /* 민트 */
+    body.theme-mint { --bg:#f0fdf4; --bg2:#dcfce7; --card:#ffffff; --text:#14532d; --text2:#166534; --border:#bbf7d0; --accent:#059669; --accent2:#047857; --accent-glow:rgba(5,150,105,0.3); }
+
     body { background:var(--bg); color:var(--text); font-family:Arial,sans-serif; display:flex; flex-direction:column; align-items:center; min-height:100vh; overflow-y:auto; transition:background-color 0.3s,color 0.3s; }
 
+    /* ── 테마 피커 ── */
+    .theme-picker-wrap { position:relative; }
+    .theme-picker-panel { display:none; position:absolute; right:0; top:32px; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:12px; z-index:200; box-shadow:0 8px 32px rgba(0,0,0,0.4); width:200px; }
+    .theme-picker-panel.open { display:block; }
+    .theme-picker-title { font-size:11px; color:var(--text2); margin-bottom:8px; text-align:center; letter-spacing:1px; }
+    .theme-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+    .theme-swatch { width:36px; height:36px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:transform 0.15s,border-color 0.15s; display:flex; align-items:center; justify-content:center; font-size:14px; }
+    .theme-swatch:hover { transform:scale(1.15); }
+    .theme-swatch.active { border-color:var(--text); transform:scale(1.1); }
+    .theme-swatch[data-theme="dark"]   { background:linear-gradient(135deg,#111,#333); }
+    .theme-swatch[data-theme="light"]  { background:linear-gradient(135deg,#f5f5f5,#e0e0e0); border-color:#ccc; }
+    .theme-swatch[data-theme="blue"]   { background:linear-gradient(135deg,#0a0f1e,#3b82f6); }
+    .theme-swatch[data-theme="green"]  { background:linear-gradient(135deg,#0a1a0f,#22c55e); }
+    .theme-swatch[data-theme="purple"] { background:linear-gradient(135deg,#0f0a1e,#a855f7); }
+    .theme-swatch[data-theme="red"]    { background:linear-gradient(135deg,#1a0a0a,#ef4444); }
+    .theme-swatch[data-theme="pink"]   { background:linear-gradient(135deg,#1a0a12,#ec4899); }
+    .theme-swatch[data-theme="sky"]    { background:linear-gradient(135deg,#e0f2fe,#0284c7); }
+    .theme-swatch[data-theme="mint"]   { background:linear-gradient(135deg,#dcfce7,#059669); }
+
     .top-bar { display:flex; width:100%; justify-content:space-between; align-items:center; padding:16px 16px 0; }
-    h1 { font-size:22px; letter-spacing:2px; color:#f97316; }
+    h1 { font-size:22px; letter-spacing:2px; color:var(--accent); }
     .top-right { display:flex; align-items:center; gap:10px; }
-    .streak-badge { background:linear-gradient(135deg,#f97316,#ea580c); border-radius:20px; padding:4px 10px; font-size:13px; font-weight:bold; color:white; }
+    .streak-badge { background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:20px; padding:4px 10px; font-size:13px; font-weight:bold; color:white; }
     .theme-toggle { width:44px!important; height:24px!important; border-radius:12px!important; background:var(--card)!important; border:1px solid var(--border)!important; font-size:14px!important; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0!important; }
 
     #map { width:100%; height:35vh; margin-top:10px; }
@@ -33,11 +73,11 @@
     .goal-label { font-size:12px; color:var(--text2); margin-bottom:8px; }
     .goal-options { display:flex; gap:8px; flex-wrap:wrap; }
     .goal-btn { padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:none; color:var(--text2); font-size:13px; cursor:pointer; transition:all 0.2s; }
-    .goal-btn.active { background:#f97316; color:white; border-color:#f97316; }
+    .goal-btn.active { background:var(--accent); color:white; border-color:var(--accent); }
 
     #goal-progress-wrap { width:100%; max-width:400px; padding:0 16px; margin-bottom:12px; display:none; }
     .progress-bar-bg { background:var(--bg2); border-radius:10px; height:8px; overflow:hidden; }
-    .progress-bar-fill { height:100%; background:linear-gradient(90deg,#f97316,#ea580c); border-radius:10px; transition:width 0.5s; width:0%; }
+    .progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:10px; transition:width 0.5s; width:0%; }
     .progress-label { font-size:12px; color:var(--text2); margin-top:4px; text-align:center; }
 
     #weight-display { font-size:12px; color:var(--text2); margin-bottom:10px; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
@@ -45,14 +85,14 @@
     .run-btns { display:flex; gap:16px; margin-bottom:4px; }
     .run-btn { width:110px; height:110px; border-radius:50%; border:none; font-size:18px; font-weight:bold; cursor:pointer; transition:transform 0.1s; }
     .run-btn:active { transform:scale(0.95); }
-    #startBtn { background:#f97316; color:white; }
+    #startBtn { background:var(--accent); color:white; }
     #stopBtn { background:#ef4444; color:white; display:none; }
 
     #resume-banner { display:none; background:var(--card); border:1px solid #f97316; border-radius:12px; padding:12px 16px; margin:10px 16px; text-align:center; font-size:14px; color:#f97316; cursor:pointer; width:calc(100% - 32px); }
 
     .tab-bar { display:flex; width:100%; background:var(--bg2); margin-top:20px; border-bottom:1px solid var(--border); overflow-x:auto; }
     .tab-btn { flex:1; min-width:60px; width:auto; height:auto; border-radius:0; background:none; color:var(--text2); font-size:12px; padding:12px 4px; border:none; border-bottom:2px solid transparent; }
-    .tab-btn.active { color:#f97316; border-bottom:2px solid #f97316; }
+    .tab-btn.active { color:var(--accent); border-bottom:2px solid var(--accent); }
     .tab-content { display:none; width:100%; max-width:480px; padding:16px; }
     .tab-content.active { display:block; }
 
@@ -67,22 +107,22 @@
     .delete-btn { width:auto!important; height:auto!important; background:none!important; color:#555; font-size:18px; border-radius:0!important; border:none; cursor:pointer; }
     .share-btn-sm { background:none; border:1px solid #FEE500; border-radius:8px; padding:4px 8px; font-size:11px; color:#FEE500; cursor:pointer; white-space:nowrap; }
     .fav-btn-sm { background:none; border:1px solid var(--border); border-radius:8px; padding:4px 8px; font-size:11px; color:var(--text2); cursor:pointer; white-space:nowrap; }
-    .fav-btn-sm.saved { border-color:#f97316; color:#f97316; }
+    .fav-btn-sm.saved { border-color:var(--accent); color:var(--accent); }
 
     .stats-summary { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
     .summary-card { background:var(--card); border-radius:12px; padding:14px; text-align:center; }
     .summary-card .s-label { font-size:11px; color:var(--text2); margin-bottom:4px; }
-    .summary-card .s-value { font-size:22px; font-weight:bold; color:#f97316; }
+    .summary-card .s-value { font-size:22px; font-weight:bold; color:var(--accent); }
     .summary-card .s-unit { font-size:11px; color:var(--text2); }
 
     .chart-title { font-size:13px; color:var(--text2); margin-bottom:12px; }
     .chart-wrap { background:var(--bg2); border-radius:12px; padding:16px; margin-bottom:16px; }
     .bar-chart { display:flex; align-items:flex-end; gap:4px; height:100px; margin-bottom:6px; }
     .bar-col { display:flex; flex-direction:column; align-items:center; flex:1; }
-    .bar { width:100%; background:#f97316; border-radius:3px 3px 0 0; min-height:2px; transition:height 0.3s; }
+    .bar { width:100%; background:var(--accent); border-radius:3px 3px 0 0; min-height:2px; transition:height 0.3s; }
     .bar.empty { background:var(--border); }
     .bar-label { font-size:9px; color:var(--text2); margin-top:4px; text-align:center; }
-    .bar-val { font-size:9px; color:#f97316; margin-bottom:2px; }
+    .bar-val { font-size:9px; color:var(--accent); margin-bottom:2px; }
 
     /* ── 모달 공통 ── */
     .modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center; }
@@ -92,10 +132,10 @@
     .modal-box h2 { font-size:20px; font-weight:bold; color:var(--text); margin-bottom:6px; }
     .modal-box p { font-size:13px; color:var(--text2); margin-bottom:24px; line-height:1.5; }
     .weight-input-wrap { display:flex; align-items:center; justify-content:center; background:var(--bg2); border-radius:14px; border:2px solid var(--border); padding:12px 16px; margin-bottom:20px; transition:border-color 0.2s; }
-    .weight-input-wrap:focus-within { border-color:#f97316; }
+    .weight-input-wrap:focus-within { border-color:var(--accent); }
     .weight-input-wrap input { background:none; border:none; outline:none; color:var(--text); font-size:28px; font-weight:bold; width:80px; text-align:center; }
     .weight-input-wrap span { font-size:16px; color:var(--text2); margin-left:4px; }
-    .modal-confirm-btn { width:100%; height:52px; border-radius:26px; background:linear-gradient(135deg,#f97316,#ea580c); color:white; font-size:16px; font-weight:bold; border:none; cursor:pointer; box-shadow:0 4px 15px rgba(249,115,22,0.4); transition:transform 0.1s; }
+    .modal-confirm-btn { width:100%; height:52px; border-radius:26px; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; font-size:16px; font-weight:bold; border:none; cursor:pointer; box-shadow:0 4px 15px var(--accent-glow); transition:transform 0.1s; }
     .modal-confirm-btn:active { transform:scale(0.97); }
 
     /* 결과 화면 */
@@ -107,7 +147,7 @@
     .result-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
     .result-item { background:var(--bg2); border-radius:12px; padding:12px; text-align:center; }
     .result-item .r-label { font-size:11px; color:var(--text2); margin-bottom:4px; }
-    .result-item .r-value { font-size:20px; font-weight:bold; color:#f97316; }
+    .result-item .r-value { font-size:20px; font-weight:bold; color:var(--accent); }
     .result-item .r-unit { font-size:11px; color:var(--text2); }
     .goal-achieved-badge { background:linear-gradient(135deg,#22c55e,#16a34a); color:white; border-radius:20px; padding:6px 16px; font-size:13px; font-weight:bold; margin-bottom:16px; display:inline-block; }
     .result-share-row { display:flex; gap:8px; margin-bottom:12px; }
@@ -128,25 +168,25 @@
     .fav-stat { text-align:center; }
     .fav-stat span { display:block; font-size:10px; color:var(--text2); }
     .fav-stat strong { font-size:14px; color:var(--text); }
-    .fav-load-btn { margin-top:10px; width:100%; padding:8px; border-radius:10px; background:#f97316; color:white; border:none; font-size:13px; font-weight:bold; cursor:pointer; }
+    .fav-load-btn { margin-top:10px; width:100%; padding:8px; border-radius:10px; background:var(--accent); color:white; border:none; font-size:13px; font-weight:bold; cursor:pointer; }
 
     /* 코스 저장 모달 */
     #save-course-modal .modal-box { width:300px; }
     .course-name-input { width:100%; padding:12px 16px; border-radius:14px; border:2px solid var(--border); background:var(--bg2); color:var(--text); font-size:16px; outline:none; margin-bottom:16px; transition:border-color 0.2s; }
-    .course-name-input:focus { border-color:#f97316; }
+    .course-name-input:focus { border-color:var(--accent); }
 
     /* ── 뱃지 탭 ── */
     .badge-section-title { font-size:13px; color:var(--text2); margin-bottom:10px; margin-top:16px; }
     .badge-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
     .badge-card { background:var(--card); border-radius:16px; padding:16px 8px; text-align:center; transition:transform 0.2s; }
     .badge-card.locked { opacity:0.35; filter:grayscale(1); }
-    .badge-card:not(.locked) { box-shadow:0 4px 15px rgba(249,115,22,0.2); }
+    .badge-card:not(.locked) { box-shadow:0 4px 15px var(--accent-glow); }
     .badge-emoji { font-size:32px; margin-bottom:6px; }
     .badge-name { font-size:11px; font-weight:bold; color:var(--text); margin-bottom:2px; }
     .badge-desc { font-size:9px; color:var(--text2); line-height:1.3; }
-    .badge-earned-date { font-size:9px; color:#f97316; margin-top:3px; }
+    .badge-earned-date { font-size:9px; color:var(--accent); margin-top:3px; }
     .badges-progress { background:var(--card); border-radius:12px; padding:14px 16px; margin-bottom:16px; display:flex; align-items:center; gap:14px; }
-    .bp-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#f97316,#ea580c); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:bold; color:white; flex-shrink:0; }
+    .bp-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:bold; color:white; flex-shrink:0; }
     .bp-text { font-size:13px; color:var(--text2); line-height:1.5; }
     .bp-text strong { color:var(--text); font-size:15px; }
 
@@ -164,7 +204,23 @@
     <h1>🏃 MY RUN</h1>
     <div class="top-right">
       <div class="streak-badge" id="streak-badge">🔥 0</div>
-      <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</button>
+      <div class="theme-picker-wrap">
+        <button class="theme-toggle" onclick="toggleThemePicker()" id="themeBtn">🎨</button>
+        <div class="theme-picker-panel" id="theme-panel">
+          <div class="theme-picker-title">테마 선택</div>
+          <div class="theme-grid">
+            <div class="theme-swatch active" data-theme="dark"    onclick="applyTheme('dark')"   title="다크"></div>
+            <div class="theme-swatch"        data-theme="light"   onclick="applyTheme('light')"  title="라이트"></div>
+            <div class="theme-swatch"        data-theme="blue"    onclick="applyTheme('blue')"   title="블루"></div>
+            <div class="theme-swatch"        data-theme="green"   onclick="applyTheme('green')"  title="그린"></div>
+            <div class="theme-swatch"        data-theme="purple"  onclick="applyTheme('purple')" title="퍼플"></div>
+            <div class="theme-swatch"        data-theme="red"     onclick="applyTheme('red')"    title="레드"></div>
+            <div class="theme-swatch"        data-theme="pink"    onclick="applyTheme('pink')"   title="핑크"></div>
+            <div class="theme-swatch"        data-theme="sky"     onclick="applyTheme('sky')"    title="스카이"></div>
+            <div class="theme-swatch"        data-theme="mint"    onclick="applyTheme('mint')"   title="민트"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -388,10 +444,7 @@
     window.addEventListener('load', function() {
       map = L.map('map').setView([37.5665, 126.9780], 16);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-      if (localStorage.getItem('theme') === 'light') {
-        document.body.classList.add('light');
-        document.getElementById('themeBtn').textContent = '☀️';
-      }
+      applyTheme(currentTheme);
       if (!userWeight) openWeightModal();
       else updateWeightDisplay();
       renderRecords();
@@ -400,10 +453,87 @@
     });
 
     // ── 테마 ──
-    function toggleTheme() {
-      const isLight = document.body.classList.toggle('light');
-      document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
-      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    const THEME_EMOJIS = { dark:'🌙', light:'☀️', blue:'💙', green:'💚', purple:'💜', red:'❤️', pink:'🩷', sky:'🩵', mint:'🌿' };
+    let currentTheme = localStorage.getItem('theme') || 'dark';
+
+    function applyTheme(theme) {
+      // 기존 테마 클래스 제거
+      document.body.className = document.body.className
+        .replace(/theme-\S+/g, '').replace(/\blight\b/g, '').trim();
+      if (theme === 'light') document.body.classList.add('theme-light');
+      else if (theme !== 'dark') document.body.classList.add('theme-' + theme);
+      currentTheme = theme;
+      localStorage.setItem('theme', theme);
+      document.getElementById('themeBtn').textContent = THEME_EMOJIS[theme] || '🎨';
+      document.querySelectorAll('.theme-swatch').forEach(s => {
+        s.classList.toggle('active', s.dataset.theme === theme);
+      });
+      document.getElementById('theme-panel').classList.remove('open');
+    }
+
+    function toggleThemePicker() {
+      document.getElementById('theme-panel').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.theme-picker-wrap')) {
+        document.getElementById('theme-panel').classList.remove('open');
+      }
+    });
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━
+    //  음성 안내 (TTS)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━
+    let announcedGoalMilestones = new Set(); // 30, 50, 100
+    let announcedKms = new Set();            // 1, 2, 3 ...
+
+    function speak(text) {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'ko-KR';
+      utter.rate = 1.0;
+      utter.pitch = 1.0;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function checkVoiceAnnouncement() {
+      if (goalDistance > 0) {
+        // 목표 거리 있을 때: 30%, 50%, 100%
+        const pct = (totalDistance / goalDistance) * 100;
+        const milestones = [30, 50, 100];
+        milestones.forEach(m => {
+          if (pct >= m && !announcedGoalMilestones.has(m)) {
+            announcedGoalMilestones.add(m);
+            const remaining = Math.max(0, goalDistance - totalDistance);
+            if (m === 100) {
+              speak(`목표 달성! ${goalDistance}킬로미터를 완주했습니다. 대단해요!`);
+            } else {
+              const paceText = getPaceText();
+              speak(`목표 거리의 ${m}퍼센트 달성. ${paceText} 남은 거리 ${remaining.toFixed(1)}킬로미터.`);
+            }
+          }
+        });
+      } else {
+        // 목표 거리 없을 때: 1km마다
+        const km = Math.floor(totalDistance);
+        if (km >= 1 && !announcedKms.has(km)) {
+          announcedKms.add(km);
+          const paceText = getPaceText();
+          speak(`${km}킬로미터 완료. ${paceText}`);
+        }
+      }
+    }
+
+    function getPaceText() {
+      if (currentPaceSeconds <= 0) return '';
+      const min = Math.floor(currentPaceSeconds / 60);
+      const sec = Math.round(currentPaceSeconds % 60);
+      return `현재 페이스 ${min}분 ${sec}초.`;
+    }
+
+    function resetVoiceState() {
+      announcedGoalMilestones.clear();
+      announcedKms.clear();
     }
 
     // ── 스트릭 ──
@@ -836,6 +966,7 @@
     function startRun() {
       seconds = 0; totalDistance = 0; routeCoords = [];
       lastPosition = null; recentPositions = []; startMarker = null; currentPaceSeconds = 0;
+      resetVoiceState();
       document.getElementById('startBtn').style.display = 'none';
       document.getElementById('stopBtn').style.display = 'block';
       // 즐겨찾기 코스 경로(보라색 점선) 유지하고 싶으면 지우지 않음
@@ -852,6 +983,7 @@
         updatePace();
         document.getElementById('calories').textContent = calcCalories();
         updateGoalProgress();
+        checkVoiceAnnouncement();
         saveRunningState();
       }, 1000);
       watchId = navigator.geolocation.watchPosition(
@@ -914,6 +1046,8 @@
     // ── 러닝 종료 ──
     function stopRun() {
       isRunning = false;
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      resetVoiceState();
       document.getElementById('startBtn').style.display = 'block';
       document.getElementById('stopBtn').style.display = 'none';
       clearInterval(timerInterval);
